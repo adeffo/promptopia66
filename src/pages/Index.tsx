@@ -4,13 +4,32 @@ import { PromptCard } from "@/components/PromptCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Sparkles } from "lucide-react";
+import { Search, Sparkles, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+
+interface Prompt {
+  id: string;
+  title: string;
+  image_url: string;
+  creator_id: string;
+  created_at: string;
+  favorites_count: number;
+  comments_count: number;
+  tags: string[];
+  profiles: {
+    display_name: string | null;
+  } | null;
+}
 
 const Index = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Set up auth state listener
@@ -28,6 +47,35 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    fetchPrompts();
+  }, []);
+
+  const fetchPrompts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('prompts')
+        .select(`
+          *,
+          profiles:creator_id (display_name)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setPrompts(data || []);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Fehler beim Laden",
+        description: error.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -44,53 +92,10 @@ const Index = () => {
     }
   };
 
-  // Mock data für Demonstration
-  const mockPrompts = [
-    {
-      id: "1",
-      title: "Futuristic Cyberpunk Cityscape",
-      imageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-      creator: "MaxMustermann",
-      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      favoritesCount: 42,
-      commentsCount: 8,
-      tags: ["Cyberpunk", "Neon", "City"],
-      isFavorited: true,
-    },
-    {
-      id: "2",
-      title: "Mystical Forest with Glowing Creatures",
-      imageUrl: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
-      creator: "AnnaKreativ",
-      createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-      favoritesCount: 38,
-      commentsCount: 12,
-      tags: ["Fantasy", "Nature", "Magic"],
-      isFavorited: false,
-    },
-    {
-      id: "3",
-      title: "Abstract Digital Art Composition",
-      imageUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-      creator: "TechArtist",
-      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      favoritesCount: 56,
-      commentsCount: 15,
-      tags: ["Abstract", "Digital", "Colorful"],
-      isFavorited: true,
-    },
-    {
-      id: "4",
-      title: "Retro Vaporwave Aesthetics",
-      imageUrl: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7",
-      creator: "RetroWave",
-      createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-      favoritesCount: 73,
-      commentsCount: 21,
-      tags: ["Vaporwave", "80s", "Retro"],
-      isFavorited: false,
-    },
-  ];
+  const filteredPrompts = prompts.filter(prompt => 
+    prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    prompt.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   return (
     <Layout user={session?.user} onLogout={handleLogout}>
@@ -110,9 +115,9 @@ const Index = () => {
         </p>
       </div>
 
-      {/* Search Bar */}
-      <div className="mb-8">
-        <div className="relative mx-auto max-w-2xl">
+      {/* Search Bar & Upload Button */}
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative flex-1 max-w-2xl">
           <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
@@ -122,29 +127,50 @@ const Index = () => {
             className="h-12 pl-12 pr-4 border-border/40 bg-card/50 backdrop-blur"
           />
         </div>
+        {session && (
+          <Button
+            onClick={() => navigate("/upload")}
+            className="bg-gradient-primary shadow-glow"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Prompt hochladen
+          </Button>
+        )}
       </div>
 
       {/* Prompts Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {mockPrompts.map((prompt) => (
-          <div key={prompt.id} className="animate-fade-in">
-            <PromptCard
-              {...prompt}
-              onClick={() => {
-                toast({
-                  title: "Prompt Details",
-                  description: "Detail-Ansicht wird bald verfügbar sein!",
-                });
-              }}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Empty State für keine Prompts */}
-      {mockPrompts.length === 0 && (
+      {loading ? (
         <div className="py-12 text-center">
-          <p className="text-muted-foreground">Keine Prompts gefunden.</p>
+          <p className="text-muted-foreground">Lädt Prompts...</p>
+        </div>
+      ) : filteredPrompts.length > 0 ? (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredPrompts.map((prompt) => (
+            <div key={prompt.id} className="animate-fade-in">
+              <PromptCard
+                id={prompt.id}
+                title={prompt.title}
+                imageUrl={prompt.image_url}
+                creator={prompt.profiles?.display_name || "Unbekannt"}
+                createdAt={prompt.created_at}
+                favoritesCount={prompt.favorites_count}
+                commentsCount={prompt.comments_count}
+                tags={prompt.tags}
+                onClick={() => {
+                  toast({
+                    title: "Prompt Details",
+                    description: "Detail-Ansicht wird bald verfügbar sein!",
+                  });
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="py-12 text-center">
+          <p className="text-muted-foreground">
+            {searchQuery ? "Keine Prompts gefunden." : "Noch keine Prompts vorhanden. Sei der Erste!"}
+          </p>
         </div>
       )}
     </Layout>
