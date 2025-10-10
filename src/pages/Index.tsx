@@ -135,15 +135,25 @@ const Index = () => {
             className="h-12 pl-12 pr-4 border-border/40 bg-card/50 backdrop-blur w-full"
           />
         </div>
-        {session && (
-          <Button
-            onClick={() => navigate("/upload")}
-            className="bg-gradient-primary shadow-glow w-full sm:w-auto"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Prompt hochladen
-          </Button>
-        )}
+          {session && (
+            <div className="flex flex-col gap-2 w-full sm:w-auto">
+              <Button
+                onClick={() => navigate("/upload")}
+                className="bg-gradient-primary shadow-glow w-full"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Prompt hochladen
+              </Button>
+              <Button
+                onClick={() => navigate("/prompt-creator")}
+                variant="outline"
+                className="gap-2 w-full"
+              >
+                <Sparkles className="h-4 w-4" />
+                Selbst Inspiration geben
+              </Button>
+            </div>
+          )}
       </div>
 
       {/* Prompts Grid */}
