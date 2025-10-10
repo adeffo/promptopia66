@@ -66,7 +66,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
             <div className="rounded-lg bg-gradient-primary p-2 shadow-glow">
               <Sparkles className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="bg-gradient-primary bg-clip-text text-xl font-bold text-transparent hidden sm:inline">
+            <span className="bg-gradient-primary bg-clip-text text-lg sm:text-xl font-bold text-transparent">
               PromptHub
             </span>
           </Link>
