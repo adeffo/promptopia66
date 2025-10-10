@@ -92,6 +92,39 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          comments_on_own_prompts: boolean
+          created_at: string
+          id: string
+          leaderboard_updates: boolean
+          new_contests: boolean
+          new_prompts: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comments_on_own_prompts?: boolean
+          created_at?: string
+          id?: string
+          leaderboard_updates?: boolean
+          new_contests?: boolean
+          new_prompts?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comments_on_own_prompts?: boolean
+          created_at?: string
+          id?: string
+          leaderboard_updates?: boolean
+          new_contests?: boolean
+          new_prompts?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
