@@ -1,0 +1,145 @@
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X, Sparkles, User, LogOut, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+interface LayoutProps {
+  children: React.ReactNode;
+  user?: { email?: string; id: string } | null;
+  onLogout?: () => void;
+}
+
+export const Layout = ({ children, user, onLogout }: LayoutProps) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const navItems = [
+    { label: "Marketplace", path: "/" },
+    { label: "Contests", path: "/contests" },
+    { label: "Leaderboard", path: "/leaderboard" },
+    ...(user ? [{ label: "Meine Prompts", path: "/my-prompts" }] : []),
+  ];
+
+  const isActive = (path: string) => location.pathname === path;
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-4">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 transition-transform hover:scale-105">
+            <div className="rounded-lg bg-gradient-primary p-2 shadow-glow">
+              <Sparkles className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <span className="bg-gradient-primary bg-clip-text text-xl font-bold text-transparent">
+              PromptHub
+            </span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden items-center gap-6 md:flex">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive(item.path) ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* User Menu / Auth Buttons */}
+          <div className="flex items-center gap-4">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-9 w-9 rounded-full p-0">
+                    <Avatar className="h-9 w-9 border-2 border-primary/20">
+                      <AvatarFallback className="bg-gradient-primary text-primary-foreground">
+                        {user.email?.[0]?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5 text-sm">
+                    <p className="font-medium">{user.email || "Benutzer"}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Profil
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Einstellungen
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onLogout} className="cursor-pointer text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Abmelden
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild variant="default" size="sm" className="bg-gradient-primary shadow-glow">
+                <Link to="/auth">Anmelden</Link>
+              </Button>
+            )}
+
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="border-t border-border/40 bg-background/95 backdrop-blur md:hidden">
+            <nav className="container flex flex-col gap-2 px-4 py-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive(item.path)
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        )}
+      </header>
+
+      {/* Main Content */}
+      <main className="container px-4 py-8">{children}</main>
+    </div>
+  );
+};
