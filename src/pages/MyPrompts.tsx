@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { PromptCard } from "@/components/PromptCard";
 import { PromptDetailDialog } from "@/components/PromptDetailDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
+import { Sparkles } from "lucide-react";
 
 interface Prompt {
   id: string;
@@ -123,7 +125,15 @@ const MyPrompts = () => {
   return (
     <Layout user={session?.user} onLogout={handleLogout}>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Meine Prompts</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-3xl font-bold">Meine Prompts</h1>
+          <Button asChild variant="outline" className="gap-2">
+            <Link to="/prompt-creator">
+              <Sparkles className="h-4 w-4" />
+              Selbst Inspiration geben
+            </Link>
+          </Button>
+        </div>
 
         <Tabs defaultValue="created" className="w-full">
           <TabsList className="grid w-full max-w-md grid-cols-2">

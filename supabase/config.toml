@@ -2,3 +2,6 @@ project_id = "rtnefktbfthopgfoswwm"
 
 [functions.autocomplete-prompt]
 verify_jwt = false
+
+[functions.optimize-prompt]
+verify_jwt = false
