@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { PromptCard } from "@/components/PromptCard";
+import { PromptDetailDialog } from "@/components/PromptDetailDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,8 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPromptId, setSelectedPromptId] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -97,6 +100,11 @@ const Index = () => {
     prompt.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  const handlePromptClick = (promptId: string) => {
+    setSelectedPromptId(promptId);
+    setDialogOpen(true);
+  };
+
   return (
     <Layout user={session?.user} onLogout={handleLogout}>
       {/* Hero Section */}
@@ -156,12 +164,7 @@ const Index = () => {
                 favoritesCount={prompt.favorites_count}
                 commentsCount={prompt.comments_count}
                 tags={prompt.tags}
-                onClick={() => {
-                  toast({
-                    title: "Prompt Details",
-                    description: "Detail-Ansicht wird bald verfügbar sein!",
-                  });
-                }}
+                onClick={() => handlePromptClick(prompt.id)}
               />
             </div>
           ))}
@@ -173,6 +176,13 @@ const Index = () => {
           </p>
         </div>
       )}
+
+      <PromptDetailDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        promptId={selectedPromptId}
+        userId={session?.user?.id}
+      />
     </Layout>
   );
 };
