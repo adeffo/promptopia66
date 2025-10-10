@@ -61,7 +61,15 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    @apply bg-background;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground min-h-screen;
+  }
+
+  #root {
+    @apply min-h-screen;
   }
 }
