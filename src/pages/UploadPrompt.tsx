@@ -58,15 +58,45 @@ const UploadPrompt = () => {
     navigate("/");
   };
 
+  const validateImageFile = (file: File): boolean => {
+    // Check MIME type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      return false;
+    }
+    
+    // Check file extension
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const extension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    if (!validExtensions.includes(extension)) {
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      if (!validateImageFile(file)) {
+        toast({
+          variant: "destructive",
+          title: "Ungültiger Dateityp",
+          description: "Bitte lade nur Bilddateien hoch (JPG, PNG, GIF, WebP).",
+        });
+        e.target.value = '';
+        return;
+      }
+
+      // Validate file size
       if (file.size > 5 * 1024 * 1024) {
         toast({
           variant: "destructive",
           title: "Datei zu groß",
           description: "Bitte wähle ein Bild unter 5MB.",
         });
+        e.target.value = '';
         return;
       }
       
