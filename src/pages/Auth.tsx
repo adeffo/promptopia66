@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles } from "lucide-react";
+import { authSchema } from "@/lib/validations";
+import { z } from "zod";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -30,9 +32,11 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      const validatedData = authSchema.parse({ email, password });
+
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: validatedData.email,
+        password: validatedData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -45,11 +49,19 @@ const Auth = () => {
         description: "Du kannst dich jetzt anmelden.",
       });
     } catch (error: any) {
-      toast({
-        title: "Fehler bei der Registrierung",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          variant: "destructive",
+          title: "Validierungsfehler",
+          description: error.errors[0].message,
+        });
+      } else {
+        toast({
+          title: "Fehler bei der Registrierung",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -60,9 +72,11 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      const validatedData = authSchema.parse({ email, password });
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: validatedData.email,
+        password: validatedData.password,
       });
 
       if (error) throw error;
@@ -73,11 +87,19 @@ const Auth = () => {
       });
       navigate("/");
     } catch (error: any) {
-      toast({
-        title: "Fehler bei der Anmeldung",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          variant: "destructive",
+          title: "Validierungsfehler",
+          description: error.errors[0].message,
+        });
+      } else {
+        toast({
+          title: "Fehler bei der Anmeldung",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -124,6 +146,7 @@ const Auth = () => {
                       placeholder="deine@email.de"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      maxLength={255}
                       required
                       disabled={loading}
                     />
@@ -136,6 +159,8 @@ const Auth = () => {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      minLength={8}
+                      maxLength={100}
                       required
                       disabled={loading}
                     />
@@ -160,6 +185,7 @@ const Auth = () => {
                       placeholder="deine@email.de"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      maxLength={255}
                       required
                       disabled={loading}
                     />
@@ -172,9 +198,10 @@ const Auth = () => {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      minLength={8}
+                      maxLength={100}
                       required
                       disabled={loading}
-                      minLength={6}
                     />
                   </div>
                   <Button

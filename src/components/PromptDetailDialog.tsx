@@ -15,6 +15,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
+import { commentSchema } from "@/lib/validations";
+import { z } from "zod";
 
 interface Comment {
   id: string;
@@ -174,16 +176,16 @@ export const PromptDetailDialog = ({
       return;
     }
 
-    if (!newComment.trim()) return;
-
     setLoading(true);
     try {
+      const validatedData = commentSchema.parse({ text: newComment });
+
       const { error } = await supabase
         .from("comments")
         .insert({
           prompt_id: promptId,
           user_id: userId,
-          text: newComment,
+          text: validatedData.text,
         });
 
       if (error) throw error;
@@ -197,11 +199,19 @@ export const PromptDetailDialog = ({
         description: "Dein Kommentar wurde erfolgreich gepostet.",
       });
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Fehler",
-        description: error.message,
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          variant: "destructive",
+          title: "Validierungsfehler",
+          description: error.errors[0].message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Fehler",
+          description: error.message,
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -341,6 +351,7 @@ export const PromptDetailDialog = ({
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   disabled={loading}
+                  maxLength={1000}
                   rows={3}
                 />
                 <Button

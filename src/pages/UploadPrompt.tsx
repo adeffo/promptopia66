@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Loader2 } from "lucide-react";
 import { Session } from "@supabase/supabase-js";
+import { promptSchema } from "@/lib/validations";
+import { z } from "zod";
 
 const UploadPrompt = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -101,6 +103,16 @@ const UploadPrompt = () => {
     setLoading(true);
 
     try {
+      // Validate input data
+      const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      const validatedData = promptSchema.parse({
+        title,
+        prompt_text: promptText,
+        tags: tagsArray,
+        model_used: modelUsed || undefined,
+        difficulty: difficulty || undefined,
+      });
+
       // Upload image to storage
       const fileExt = imageFile.name.split('.').pop();
       const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
@@ -117,18 +129,16 @@ const UploadPrompt = () => {
         .getPublicUrl(fileName);
 
       // Insert prompt into database
-      const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-      
       const { error: insertError } = await supabase
         .from('prompts')
         .insert({
-          title,
-          prompt_text: promptText,
+          title: validatedData.title,
+          prompt_text: validatedData.prompt_text,
           image_url: publicUrl,
           creator_id: session.user.id,
-          tags: tagsArray,
-          model_used: modelUsed || null,
-          difficulty: difficulty || null,
+          tags: validatedData.tags,
+          model_used: validatedData.model_used,
+          difficulty: validatedData.difficulty,
         });
 
       if (insertError) throw insertError;
@@ -140,11 +150,19 @@ const UploadPrompt = () => {
 
       navigate("/");
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Fehler beim Upload",
-        description: error.message,
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          variant: "destructive",
+          title: "Validierungsfehler",
+          description: error.errors[0].message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Fehler beim Upload",
+          description: error.message,
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -203,6 +221,7 @@ const UploadPrompt = () => {
                   placeholder="Z.B. Futuristic Cyberpunk City"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  maxLength={100}
                   required
                   disabled={loading}
                 />
@@ -216,6 +235,7 @@ const UploadPrompt = () => {
                   placeholder="Dein detaillierter KI-Prompt..."
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
+                  maxLength={5000}
                   required
                   disabled={loading}
                   rows={6}
@@ -268,7 +288,7 @@ const UploadPrompt = () => {
                   disabled={loading}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Trenne mehrere Tags mit Kommas
+                  Trenne mehrere Tags mit Kommas (max. 10 Tags)
                 </p>
               </div>
 

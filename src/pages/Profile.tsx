@@ -9,6 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { profileSchema } from "@/lib/validations";
+import { z } from "zod";
 
 const Profile = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -62,9 +64,11 @@ const Profile = () => {
 
     setLoading(true);
     try {
+      const validatedData = profileSchema.parse({ display_name: displayName });
+
       const { error } = await supabase
         .from("profiles")
-        .update({ display_name: displayName })
+        .update({ display_name: validatedData.display_name })
         .eq("id", session.user.id);
 
       if (error) throw error;
@@ -74,11 +78,19 @@ const Profile = () => {
         description: "Dein Anzeigename wurde erfolgreich geändert.",
       });
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Fehler",
-        description: error.message,
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          variant: "destructive",
+          title: "Validierungsfehler",
+          description: error.errors[0].message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Fehler",
+          description: error.message,
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -130,6 +142,7 @@ const Profile = () => {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   disabled={loading}
+                  maxLength={50}
                 />
               </div>
 
