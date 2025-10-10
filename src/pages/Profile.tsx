@@ -47,14 +47,35 @@ const Profile = () => {
         .from("profiles")
         .select("display_name")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      if (data?.display_name) {
+      if (error) {
+        console.error("Error fetching profile:", error);
+        return;
+      }
+      
+      // If no profile exists, create one
+      if (!data) {
+        const email = session?.user?.email;
+        const defaultName = email?.split('@')[0] || 'Benutzer';
+        
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert({ 
+            id: userId,
+            display_name: defaultName 
+          });
+        
+        if (insertError) {
+          console.error("Error creating profile:", insertError);
+        } else {
+          setDisplayName(defaultName);
+        }
+      } else if (data?.display_name) {
         setDisplayName(data.display_name);
       }
     } catch (error: any) {
-      console.error("Error fetching profile:", error);
+      console.error("Error in fetchProfile:", error);
     }
   };
 
@@ -66,10 +87,31 @@ const Profile = () => {
     try {
       const validatedData = profileSchema.parse({ display_name: displayName });
 
-      const { error } = await supabase
+      // First check if profile exists
+      const { data: existingProfile } = await supabase
         .from("profiles")
-        .update({ display_name: validatedData.display_name })
-        .eq("id", session.user.id);
+        .select("id")
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+      let error;
+      if (existingProfile) {
+        // Update existing profile
+        const result = await supabase
+          .from("profiles")
+          .update({ display_name: validatedData.display_name })
+          .eq("id", session.user.id);
+        error = result.error;
+      } else {
+        // Insert new profile
+        const result = await supabase
+          .from("profiles")
+          .insert({ 
+            id: session.user.id,
+            display_name: validatedData.display_name 
+          });
+        error = result.error;
+      }
 
       if (error) throw error;
 

@@ -1,1 +1,4 @@
 project_id = "rtnefktbfthopgfoswwm"
+
+[functions.autocomplete-prompt]
+verify_jwt = false

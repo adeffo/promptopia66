@@ -24,6 +24,8 @@ const UploadPrompt = () => {
   const [modelUsed, setModelUsed] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [tags, setTags] = useState("");
+  const [genre, setGenre] = useState("");
+  const [autoCompleting, setAutoCompleting] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -73,6 +75,47 @@ const UploadPrompt = () => {
     }
     
     return true;
+  };
+
+  const handleAutocomplete = async () => {
+    if (!promptText || promptText.length < 10) {
+      toast({
+        variant: "destructive",
+        title: "Prompt-Text zu kurz",
+        description: "Bitte gib mindestens 10 Zeichen ein, um Autocomplete zu verwenden.",
+      });
+      return;
+    }
+
+    setAutoCompleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('autocomplete-prompt', {
+        body: { promptText, title }
+      });
+
+      if (error) throw error;
+
+      if (data?.tags && Array.isArray(data.tags)) {
+        setTags(data.tags.join(', '));
+      }
+      if (data?.genre) {
+        setGenre(data.genre);
+      }
+
+      toast({
+        title: "Autocomplete erfolgreich",
+        description: "Tags und Genre wurden generiert!",
+      });
+    } catch (error: any) {
+      console.error('Autocomplete error:', error);
+      toast({
+        variant: "destructive",
+        title: "Autocomplete fehlgeschlagen",
+        description: error.message || "Konnte keine Vorschläge generieren.",
+      });
+    } finally {
+      setAutoCompleting(false);
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,6 +186,31 @@ const UploadPrompt = () => {
         difficulty: difficulty || undefined,
       });
 
+      // Check if user has a profile, create if not
+      const { data: profileData, error: profileCheckError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (profileCheckError) {
+        console.error('Profile check error:', profileCheckError);
+      }
+
+      // If no profile exists, create one
+      if (!profileData) {
+        const { error: profileCreateError } = await supabase
+          .from('profiles')
+          .insert({ 
+            id: session.user.id,
+            display_name: session.user.email?.split('@')[0] || 'Benutzer'
+          });
+        
+        if (profileCreateError) {
+          console.error('Profile creation error:', profileCreateError);
+        }
+      }
+
       // Upload image to storage
       const fileExt = imageFile.name.split('.').pop();
       const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
@@ -169,6 +237,7 @@ const UploadPrompt = () => {
           tags: validatedData.tags,
           model_used: validatedData.model_used,
           difficulty: validatedData.difficulty,
+          genre: genre || undefined,
         });
 
       if (insertError) throw insertError;
@@ -259,7 +328,26 @@ const UploadPrompt = () => {
 
               {/* Prompt Text */}
               <div className="space-y-2">
-                <Label htmlFor="prompt">Prompt Text *</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="prompt">Prompt Text *</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAutocomplete}
+                    disabled={loading || autoCompleting || !promptText}
+                    className="text-xs"
+                  >
+                    {autoCompleting ? (
+                      <>
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                        Generiere...
+                      </>
+                    ) : (
+                      "KI Autocomplete"
+                    )}
+                  </Button>
+                </div>
                 <Textarea
                   id="prompt"
                   placeholder="Dein detaillierter KI-Prompt..."
@@ -271,6 +359,9 @@ const UploadPrompt = () => {
                   rows={6}
                   className="resize-none"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Nutze den KI Autocomplete Button, um automatisch Tags und Genre zu generieren
+                </p>
               </div>
 
               {/* Model Used */}
@@ -305,6 +396,18 @@ const UploadPrompt = () => {
                     <SelectItem value="advanced">Experte</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Genre */}
+              <div className="space-y-2">
+                <Label htmlFor="genre">Genre (optional)</Label>
+                <Input
+                  id="genre"
+                  placeholder="z.B. Cyberpunk, Fantasy, Sci-Fi..."
+                  value={genre}
+                  onChange={(e) => setGenre(e.target.value)}
+                  disabled={loading}
+                />
               </div>
 
               {/* Tags */}
