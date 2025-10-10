@@ -35,7 +35,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="container relative flex h-16 items-center justify-between px-4">
           {/* Left: Desktop Navigation */}
           <nav className="hidden items-center gap-6 md:flex">
             {navItems.map((item) => (
@@ -62,7 +62,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
           </Button>
 
           {/* Center: Logo & Title */}
-          <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 transition-transform hover:scale-105">
+          <Link to="/" className="absolute left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 transition-transform hover:scale-105">
             <div className="rounded-lg bg-gradient-primary p-2 shadow-glow">
               <Sparkles className="h-5 w-5 text-primary-foreground" />
             </div>
