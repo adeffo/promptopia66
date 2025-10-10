@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -35,17 +36,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 transition-transform hover:scale-105">
-            <div className="rounded-lg bg-gradient-primary p-2 shadow-glow">
-              <Sparkles className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="bg-gradient-primary bg-clip-text text-xl font-bold text-transparent">
-              PromptHub
-            </span>
-          </Link>
-
-          {/* Desktop Navigation */}
+          {/* Left: Desktop Navigation */}
           <nav className="hidden items-center gap-6 md:flex">
             {navItems.map((item) => (
               <Link
@@ -60,8 +51,30 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
             ))}
           </nav>
 
-          {/* User Menu / Auth Buttons */}
-          <div className="flex items-center gap-4">
+          {/* Left: Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+
+          {/* Center: Logo & Title */}
+          <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 transition-transform hover:scale-105">
+            <div className="rounded-lg bg-gradient-primary p-2 shadow-glow">
+              <Sparkles className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <span className="bg-gradient-primary bg-clip-text text-xl font-bold text-transparent hidden sm:inline">
+              PromptHub
+            </span>
+          </Link>
+
+          {/* Right: Notifications & User Menu / Auth Buttons */}
+          <div className="flex items-center gap-3">
+            {user && <NotificationBell userId={user.id} />}
+            
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -102,16 +115,6 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                 <Link to="/auth">Anmelden</Link>
               </Button>
             )}
-
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
           </div>
         </div>
 
