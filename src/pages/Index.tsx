@@ -125,20 +125,20 @@ const Index = () => {
 
       {/* Search Bar & Upload Button */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 max-w-2xl">
+        <div className="relative flex-1 w-full sm:max-w-2xl">
           <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Suche nach Prompts, Tags oder Creators..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-12 pl-12 pr-4 border-border/40 bg-card/50 backdrop-blur"
+            className="h-12 pl-12 pr-4 border-border/40 bg-card/50 backdrop-blur w-full"
           />
         </div>
         {session && (
           <Button
             onClick={() => navigate("/upload")}
-            className="bg-gradient-primary shadow-glow"
+            className="bg-gradient-primary shadow-glow w-full sm:w-auto"
           >
             <Plus className="mr-2 h-4 w-4" />
             Prompt hochladen

@@ -34,7 +34,7 @@ export const PromptCard = ({
       onClick={onClick}
     >
       {/* Image */}
-      <div className="relative aspect-square overflow-hidden">
+      <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={imageUrl}
           alt={title}
