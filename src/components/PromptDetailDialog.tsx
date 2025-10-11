@@ -190,6 +190,25 @@ export const PromptDetailDialog = ({
 
       if (error) throw error;
 
+      // Create notification for prompt creator
+      if (prompt && prompt.creator_id !== userId) {
+        const { data: commenterProfile } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", userId)
+          .single();
+
+        await supabase.from("notifications").insert({
+          user_id: prompt.creator_id,
+          type: "comment",
+          payload: {
+            prompt_id: promptId,
+            commenter_name: commenterProfile?.display_name || "Jemand",
+            prompt_title: prompt.title,
+          },
+        });
+      }
+
       setNewComment("");
       await fetchComments();
       await fetchPromptDetails();

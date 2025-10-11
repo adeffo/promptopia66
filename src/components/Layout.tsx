@@ -41,21 +41,6 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container relative flex h-16 items-center justify-between px-4">
-          {/* Left: Desktop Navigation */}
-          <nav className="hidden items-center gap-6 md:flex">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive(item.path) ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
           {/* Left: Mobile Menu Button */}
           <div className="md:hidden">
             <Sheet>
@@ -130,15 +115,31 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
             </Sheet>
           </div>
 
-          {/* Center: Logo & Title */}
-          <Link to="/" className="absolute left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 transition-transform hover:scale-105">
-            <div className="rounded-lg bg-gradient-primary p-2 shadow-glow">
-              <Sparkles className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="bg-gradient-primary bg-clip-text text-lg font-bold text-transparent">
-              PromptHub
-            </span>
-          </Link>
+          {/* Left: Logo & Desktop Navigation */}
+          <div className="flex items-center gap-6">
+            <Link to="/" className="flex items-center gap-2 transition-transform hover:scale-105">
+              <div className="rounded-lg bg-gradient-primary p-2 shadow-glow">
+                <Sparkles className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="bg-gradient-primary bg-clip-text text-lg font-bold text-transparent">
+                PromptHub
+              </span>
+            </Link>
+            
+            <nav className="hidden items-center gap-6 md:flex">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive(item.path) ? "text-primary" : "text-muted-foreground"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
           {/* Right: Notifications & User Menu / Auth Buttons */}
           <div className="flex items-center gap-2 md:gap-3">
