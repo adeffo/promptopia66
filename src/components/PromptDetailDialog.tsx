@@ -174,6 +174,8 @@ export const PromptDetailDialog = ({
           prompt_id: promptId,
           user_id: userId,
           rating: rating,
+        }, {
+          onConflict: 'user_id,prompt_id'
         });
 
       if (error) throw error;
