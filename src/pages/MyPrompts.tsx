@@ -19,6 +19,7 @@ interface Prompt {
   favorites_count: number;
   comments_count: number;
   tags: string[];
+  average_rating: number;
   profiles: {
     display_name: string | null;
   } | null;
@@ -158,6 +159,7 @@ const MyPrompts = () => {
                     favoritesCount={prompt.favorites_count}
                     commentsCount={prompt.comments_count}
                     tags={prompt.tags}
+                    averageRating={prompt.average_rating}
                     onClick={() => handlePromptClick(prompt.id)}
                   />
                 ))}
@@ -184,6 +186,7 @@ const MyPrompts = () => {
                     favoritesCount={prompt.favorites_count}
                     commentsCount={prompt.comments_count}
                     tags={prompt.tags}
+                    averageRating={prompt.average_rating}
                     isFavorited={true}
                     onClick={() => handlePromptClick(prompt.id)}
                   />

@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface UserProfile {
   display_name: string | null;
@@ -18,6 +20,7 @@ interface UserProfileDialogProps {
 }
 
 export const UserProfileDialog = ({ userId, open, onOpenChange }: UserProfileDialogProps) => {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -84,6 +87,19 @@ export const UserProfileDialog = ({ userId, open, onOpenChange }: UserProfileDia
                 </p>
               </div>
             </div>
+
+            {profile.prompts_count > 0 && (
+              <Button
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate(`/user/${userId}/prompts`);
+                }}
+                variant="outline"
+                className="w-full"
+              >
+                Alle Prompts anzeigen
+              </Button>
+            )}
 
             {(profile.instagram_url || profile.facebook_url) && (
               <div className="space-y-2">

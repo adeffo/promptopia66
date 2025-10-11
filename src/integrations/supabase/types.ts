@@ -192,6 +192,7 @@ export type Database = {
       }
       prompts: {
         Row: {
+          average_rating: number | null
           comments_count: number
           created_at: string
           creator_id: string
@@ -203,11 +204,13 @@ export type Database = {
           language: string | null
           model_used: string | null
           prompt_text: string
+          ratings_count: number | null
           tags: string[] | null
           title: string
           updated_at: string
         }
         Insert: {
+          average_rating?: number | null
           comments_count?: number
           created_at?: string
           creator_id: string
@@ -219,11 +222,13 @@ export type Database = {
           language?: string | null
           model_used?: string | null
           prompt_text: string
+          ratings_count?: number | null
           tags?: string[] | null
           title: string
           updated_at?: string
         }
         Update: {
+          average_rating?: number | null
           comments_count?: number
           created_at?: string
           creator_id?: string
@@ -235,6 +240,7 @@ export type Database = {
           language?: string | null
           model_used?: string | null
           prompt_text?: string
+          ratings_count?: number | null
           tags?: string[] | null
           title?: string
           updated_at?: string
@@ -245,6 +251,41 @@ export type Database = {
             columns: ["creator_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ratings: {
+        Row: {
+          created_at: string
+          id: string
+          prompt_id: string
+          rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          prompt_id: string
+          rating: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          prompt_id?: string
+          rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "prompts"
             referencedColumns: ["id"]
           },
         ]

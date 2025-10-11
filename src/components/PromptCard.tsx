@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { UserProfileDialog } from "./UserProfileDialog";
+import { StarRating } from "./StarRating";
 
 interface PromptCardProps {
   id: string;
@@ -18,6 +19,7 @@ interface PromptCardProps {
   isFavorited?: boolean;
   onClick?: () => void;
   creatorId?: string;
+  averageRating?: number;
 }
 
 export const PromptCard = ({
@@ -31,6 +33,7 @@ export const PromptCard = ({
   isFavorited,
   onClick,
   creatorId,
+  averageRating = 0,
 }: PromptCardProps) => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   
@@ -93,19 +96,22 @@ export const PromptCard = ({
         </div>
 
         {/* Stats */}
-        <div className="mt-3 flex items-center gap-4 border-t border-border/40 pt-3">
-          <div className="flex items-center gap-1.5 text-sm">
-            <Heart
-              className={`h-4 w-4 transition-colors ${
-                isFavorited ? "fill-accent text-accent" : "text-muted-foreground"
-              }`}
-            />
-            <span className="font-medium">{favoritesCount}</span>
+        <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-3">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 text-sm">
+              <Heart
+                className={`h-4 w-4 transition-colors ${
+                  isFavorited ? "fill-accent text-accent" : "text-muted-foreground"
+                }`}
+              />
+              <span className="font-medium">{favoritesCount}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm">
+              <MessageCircle className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{commentsCount}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 text-sm">
-            <MessageCircle className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">{commentsCount}</span>
-          </div>
+          <StarRating rating={averageRating} size={14} />
         </div>
       </div>
     </Card>

@@ -17,6 +17,7 @@ import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { commentSchema } from "@/lib/validations";
 import { z } from "zod";
+import { StarRating } from "./StarRating";
 
 interface Comment {
   id: string;
@@ -44,6 +45,7 @@ export const PromptDetailDialog = ({
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isFavorited, setIsFavorited] = useState(false);
+  const [userRating, setUserRating] = useState(0);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
@@ -54,6 +56,7 @@ export const PromptDetailDialog = ({
       fetchComments();
       if (userId) {
         checkIfFavorited();
+        checkUserRating();
       }
     }
   }, [promptId, open, userId]);
@@ -121,6 +124,61 @@ export const PromptDetailDialog = ({
       setIsFavorited(!!data);
     } catch (error: any) {
       console.error("Error checking favorite:", error);
+    }
+  };
+
+  const checkUserRating = async () => {
+    if (!promptId || !userId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("ratings")
+        .select("rating")
+        .eq("prompt_id", promptId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      setUserRating(data?.rating || 0);
+    } catch (error: any) {
+      console.error("Error checking rating:", error);
+    }
+  };
+
+  const handleRating = async (rating: number) => {
+    if (!userId) {
+      toast({
+        variant: "destructive",
+        title: "Anmeldung erforderlich",
+        description: "Bitte melde dich an, um Prompts zu bewerten.",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("ratings")
+        .upsert({
+          prompt_id: promptId,
+          user_id: userId,
+          rating: rating,
+        });
+
+      if (error) throw error;
+
+      setUserRating(rating);
+      await fetchPromptDetails();
+
+      toast({
+        title: "Bewertung gespeichert",
+        description: "Deine Bewertung wurde erfolgreich gespeichert.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: error.message,
+      });
     }
   };
 
@@ -305,6 +363,30 @@ export const PromptDetailDialog = ({
                 {prompt.comments_count}
               </div>
             </div>
+          </div>
+
+          {/* Rating Section */}
+          <div className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/30 p-4">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Durchschnittsbewertung</p>
+              <div className="flex items-center gap-2">
+                <StarRating rating={prompt.average_rating || 0} size={18} />
+                <span className="text-sm text-muted-foreground">
+                  ({prompt.ratings_count || 0} {prompt.ratings_count === 1 ? "Bewertung" : "Bewertungen"})
+                </span>
+              </div>
+            </div>
+            {userId && (
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Deine Bewertung</p>
+                <StarRating
+                  rating={userRating}
+                  size={18}
+                  interactive={true}
+                  onRatingChange={handleRating}
+                />
+              </div>
+            )}
           </div>
 
           {/* Tags */}

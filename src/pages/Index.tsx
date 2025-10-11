@@ -9,6 +9,13 @@ import { Search, Sparkles, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Prompt {
   id: string;
@@ -19,6 +26,7 @@ interface Prompt {
   favorites_count: number;
   comments_count: number;
   tags: string[];
+  average_rating: number;
   profiles: {
     display_name: string | null;
   } | null;
@@ -27,6 +35,7 @@ interface Prompt {
 const Index = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<string>("created_at_desc");
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPromptId, setSelectedPromptId] = useState<string | null>(null);
@@ -95,10 +104,33 @@ const Index = () => {
     }
   };
 
-  const filteredPrompts = prompts.filter(prompt => 
-    prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    prompt.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredPrompts = prompts
+    .filter(prompt => 
+      prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      prompt.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "comments_desc":
+          return b.comments_count - a.comments_count;
+        case "comments_asc":
+          return a.comments_count - b.comments_count;
+        case "rating_desc":
+          return b.average_rating - a.average_rating;
+        case "rating_asc":
+          return a.average_rating - b.average_rating;
+        case "favorites_desc":
+          return b.favorites_count - a.favorites_count;
+        case "favorites_asc":
+          return a.favorites_count - b.favorites_count;
+        case "created_at_desc":
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case "created_at_asc":
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        default:
+          return 0;
+      }
+    });
 
   const handlePromptClick = (promptId: string) => {
     setSelectedPromptId(promptId);
@@ -123,37 +155,54 @@ const Index = () => {
         </p>
       </div>
 
-      {/* Search Bar & Upload Button */}
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 w-full sm:max-w-2xl">
-          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Suche nach Prompts, Tags oder Creators..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-12 pl-12 pr-4 border-border/40 bg-card/50 backdrop-blur w-full"
-          />
+      {/* Search Bar, Filter & Upload Button */}
+      <div className="mb-8 flex flex-col gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Suche nach Prompts, Tags oder Creators..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-12 pl-12 pr-4 border-border/40 bg-card/50 backdrop-blur w-full"
+            />
+          </div>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full sm:w-[240px] h-12">
+              <SelectValue placeholder="Sortieren nach..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="created_at_desc">Zuletzt hochgeladen</SelectItem>
+              <SelectItem value="created_at_asc">Älteste zuerst</SelectItem>
+              <SelectItem value="rating_desc">Bewertung: Hoch → Niedrig</SelectItem>
+              <SelectItem value="rating_asc">Bewertung: Niedrig → Hoch</SelectItem>
+              <SelectItem value="favorites_desc">Favoriten: Viel → Wenig</SelectItem>
+              <SelectItem value="favorites_asc">Favoriten: Wenig → Viel</SelectItem>
+              <SelectItem value="comments_desc">Kommentare: Viel → Wenig</SelectItem>
+              <SelectItem value="comments_asc">Kommentare: Wenig → Viel</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-          {session && (
-            <div className="flex flex-col gap-2 w-full sm:w-auto">
-              <Button
-                onClick={() => navigate("/upload")}
-                className="bg-gradient-primary shadow-glow w-full"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Prompt hochladen
-              </Button>
-              <Button
-                onClick={() => navigate("/prompt-creator")}
-                variant="outline"
-                className="gap-2 w-full"
-              >
-                <Sparkles className="h-4 w-4" />
-                Selbst Inspiration geben
-              </Button>
-            </div>
-          )}
+        {session && (
+          <div className="flex flex-col gap-2 w-full sm:w-auto sm:flex-row">
+            <Button
+              onClick={() => navigate("/upload")}
+              className="bg-gradient-primary shadow-glow w-full"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Prompt hochladen
+            </Button>
+            <Button
+              onClick={() => navigate("/prompt-creator")}
+              variant="outline"
+              className="gap-2 w-full"
+            >
+              <Sparkles className="h-4 w-4" />
+              Selbst Inspiration geben
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Prompts Grid */}
@@ -175,6 +224,7 @@ const Index = () => {
                 favoritesCount={prompt.favorites_count}
                 commentsCount={prompt.comments_count}
                 tags={prompt.tags}
+                averageRating={prompt.average_rating}
                 onClick={() => handlePromptClick(prompt.id)}
               />
             </div>
