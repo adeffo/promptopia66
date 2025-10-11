@@ -18,6 +18,7 @@ import { de } from "date-fns/locale";
 import { commentSchema } from "@/lib/validations";
 import { z } from "zod";
 import { StarRating } from "./StarRating";
+import { UserProfileDialog } from "./UserProfileDialog";
 
 interface Comment {
   id: string;
@@ -48,6 +49,7 @@ export const PromptDetailDialog = ({
   const [userRating, setUserRating] = useState(0);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [userProfileDialogOpen, setUserProfileDialogOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -151,6 +153,16 @@ export const PromptDetailDialog = ({
         variant: "destructive",
         title: "Anmeldung erforderlich",
         description: "Bitte melde dich an, um Prompts zu bewerten.",
+      });
+      return;
+    }
+
+    // Check if user is trying to rate their own prompt
+    if (prompt && prompt.creator_id === userId) {
+      toast({
+        variant: "destructive",
+        title: "Nicht erlaubt",
+        description: "Du kannst deinen eigenen Prompt nicht bewerten.",
       });
       return;
     }
@@ -327,14 +339,20 @@ export const PromptDetailDialog = ({
 
           {/* Creator & Stats */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setUserProfileDialogOpen(true);
+              }}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
               <Avatar className="h-10 w-10">
                 <AvatarFallback className="bg-gradient-primary text-primary-foreground">
                   {prompt.profiles?.display_name?.[0]?.toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <p className="font-medium">{prompt.profiles?.display_name || "Unbekannt"}</p>
+              <div className="text-left">
+                <p className="font-medium hover:underline">{prompt.profiles?.display_name || "Unbekannt"}</p>
                 <p className="text-sm text-muted-foreground">
                   {formatDistanceToNow(new Date(prompt.created_at), {
                     addSuffix: true,
@@ -342,7 +360,7 @@ export const PromptDetailDialog = ({
                   })}
                 </p>
               </div>
-            </div>
+            </button>
 
             <div className="flex items-center gap-4">
               <Button
@@ -376,7 +394,7 @@ export const PromptDetailDialog = ({
                 </span>
               </div>
             </div>
-            {userId && (
+            {userId && prompt.creator_id !== userId && (
               <div className="space-y-1">
                 <p className="text-sm font-medium">Deine Bewertung</p>
                 <StarRating
@@ -499,6 +517,12 @@ export const PromptDetailDialog = ({
           </div>
         </div>
       </DialogContent>
+
+      <UserProfileDialog
+        userId={prompt?.creator_id || null}
+        open={userProfileDialogOpen}
+        onOpenChange={setUserProfileDialogOpen}
+      />
     </Dialog>
   );
 };
