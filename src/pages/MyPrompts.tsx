@@ -153,6 +153,7 @@ const MyPrompts = () => {
                     title={prompt.title}
                     imageUrl={prompt.image_url}
                     creator={prompt.profiles?.display_name || "Unbekannt"}
+                    creatorId={prompt.creator_id}
                     createdAt={prompt.created_at}
                     favoritesCount={prompt.favorites_count}
                     commentsCount={prompt.comments_count}
@@ -178,6 +179,7 @@ const MyPrompts = () => {
                     title={prompt.title}
                     imageUrl={prompt.image_url}
                     creator={prompt.profiles?.display_name || "Unbekannt"}
+                    creatorId={prompt.creator_id}
                     createdAt={prompt.created_at}
                     favoritesCount={prompt.favorites_count}
                     commentsCount={prompt.comments_count}

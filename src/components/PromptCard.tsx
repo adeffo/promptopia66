@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Heart, MessageCircle, User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
+import { UserProfileDialog } from "./UserProfileDialog";
 
 interface PromptCardProps {
   id: string;
@@ -15,6 +17,7 @@ interface PromptCardProps {
   tags?: string[];
   isFavorited?: boolean;
   onClick?: () => void;
+  creatorId?: string;
 }
 
 export const PromptCard = ({
@@ -27,8 +30,12 @@ export const PromptCard = ({
   tags,
   isFavorited,
   onClick,
+  creatorId,
 }: PromptCardProps) => {
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  
   return (
+    <>
     <Card
       className="group relative overflow-hidden border-border/40 bg-gradient-card backdrop-blur transition-all hover:border-primary/50 hover:shadow-glow cursor-pointer"
       onClick={onClick}
@@ -66,10 +73,17 @@ export const PromptCard = ({
 
         {/* Meta Info */}
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (creatorId) setProfileDialogOpen(true);
+            }}
+            className="flex items-center gap-1 hover:text-foreground hover:underline transition-colors disabled:cursor-default disabled:hover:no-underline"
+            disabled={!creatorId}
+          >
             <User className="h-3.5 w-3.5" />
             <span className="truncate">{creator}</span>
-          </div>
+          </button>
           <span>
             {formatDistanceToNow(new Date(createdAt), {
               addSuffix: true,
@@ -95,5 +109,12 @@ export const PromptCard = ({
         </div>
       </div>
     </Card>
+    
+    <UserProfileDialog
+      userId={creatorId || null}
+      open={profileDialogOpen}
+      onOpenChange={setProfileDialogOpen}
+    />
+    </>
   );
 };

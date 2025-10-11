@@ -19,4 +19,6 @@ export const commentSchema = z.object({
 
 export const profileSchema = z.object({
   display_name: z.string().trim().min(1, "Anzeigename erforderlich").max(50, "Anzeigename zu lang (max. 50 Zeichen)"),
+  instagram_url: z.string().trim().url("Ungültige URL").optional().or(z.literal("")),
+  facebook_url: z.string().trim().url("Ungültige URL").optional().or(z.literal("")),
 });

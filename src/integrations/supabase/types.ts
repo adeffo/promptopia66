@@ -165,21 +165,27 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           display_name: string | null
+          facebook_url: string | null
           id: string
+          instagram_url: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          facebook_url?: string | null
           id: string
+          instagram_url?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          facebook_url?: string | null
           id?: string
+          instagram_url?: string | null
           updated_at?: string
         }
         Relationships: []
