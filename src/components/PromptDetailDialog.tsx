@@ -341,7 +341,7 @@ export const PromptDetailDialog = ({
             <img
               src={prompt.image_url}
               alt={prompt.title}
-              className="h-full w-full object-cover object-top"
+              className="h-full w-full object-contain"
             />
           </div>
 
