@@ -1,8 +1,9 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Sparkles, User, LogOut, Settings, Menu, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Footer } from "@/components/Footer";
+import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,12 +28,27 @@ interface LayoutProps {
 
 export const Layout = ({ children, user, onLogout }: LayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleProtectedNavigation = (path: string, requiresAuth: boolean = false) => {
+    if (requiresAuth && !user) {
+      toast({
+        variant: "destructive",
+        title: "Anmeldung erforderlich",
+        description: "Bitte melde dich an, um diese Funktion zu nutzen.",
+      });
+      navigate("/auth");
+      return;
+    }
+    navigate(path);
+  };
 
   const navItems = [
     { label: "Marketplace", path: "/" },
     { label: "Contests", path: "/contests" },
     { label: "Leaderboard", path: "/leaderboard" },
-    ...(user ? [{ label: "Meine Prompts", path: "/my-prompts" }] : []),
+    { label: "Meine Prompts", path: "/my-prompts", requiresAuth: true },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -56,49 +72,49 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                 </SheetHeader>
                 <nav className="flex flex-col gap-2 mt-6">
                   {navItems.map((item) => (
-                    <Link
+                    <button
                       key={item.path}
-                      to={item.path}
-                      className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      onClick={() => handleProtectedNavigation(item.path, item.requiresAuth)}
+                      className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors text-left ${
                         isActive(item.path)
                           ? "bg-primary/10 text-primary"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       }`}
                     >
                       {item.label}
-                    </Link>
+                    </button>
                   ))}
+                  <div className="my-2 border-t border-border" />
+                  <button
+                    onClick={() => handleProtectedNavigation("/prompt-extractor", true)}
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 text-left"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Prompt extrahieren
+                  </button>
+                  <button
+                    onClick={() => handleProtectedNavigation("/prompt-creator", true)}
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 text-left"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Selbst Inspiration geben
+                  </button>
+                  <button
+                    onClick={() => handleProtectedNavigation("/profile", true)}
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center gap-2 text-left"
+                  >
+                    <User className="h-4 w-4" />
+                    Profil
+                  </button>
+                  <button
+                    onClick={() => handleProtectedNavigation("/settings", true)}
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center gap-2 text-left"
+                  >
+                    <Settings className="h-4 w-4" />
+                    Einstellungen
+                  </button>
                   {user && (
                     <>
-                      <div className="my-2 border-t border-border" />
-                      <Link
-                        to="/prompt-extractor"
-                        className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
-                      >
-                        <Upload className="h-4 w-4" />
-                        Prompt extrahieren
-                      </Link>
-                      <Link
-                        to="/prompt-creator"
-                        className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
-                      >
-                        <Sparkles className="h-4 w-4" />
-                        Selbst Inspiration geben
-                      </Link>
-                      <Link
-                        to="/profile"
-                        className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center gap-2"
-                      >
-                        <User className="h-4 w-4" />
-                        Profil
-                      </Link>
-                      <Link
-                        to="/settings"
-                        className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center gap-2"
-                      >
-                        <Settings className="h-4 w-4" />
-                        Einstellungen
-                      </Link>
                       <div className="my-2 border-t border-border" />
                       <Button
                         variant="ghost"
@@ -136,15 +152,15 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
             
             <nav className="hidden items-center gap-6 md:flex">
               {navItems.map((item) => (
-                <Link
+                <button
                   key={item.path}
-                  to={item.path}
+                  onClick={() => handleProtectedNavigation(item.path, item.requiresAuth)}
                   className={`text-sm font-medium transition-colors hover:text-primary ${
                     isActive(item.path) ? "text-primary" : "text-muted-foreground"
                   }`}
                 >
                   {item.label}
-                </Link>
+                </button>
               ))}
             </nav>
           </div>

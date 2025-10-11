@@ -212,6 +212,14 @@ export default function PromptExtractor() {
                     </>
                   )}
                 </Button>
+
+                {loading && (
+                  <div className="rounded-lg border border-border bg-muted/50 p-4 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      Dein Bild wird analysiert... Dies kann bis zu 30 Sekunden dauern.
+                    </p>
+                  </div>
+                )}
               </>
             )}
 

@@ -184,33 +184,64 @@ const Index = () => {
             </SelectContent>
           </Select>
         </div>
-        {session && (
-          <div className="flex flex-col gap-2 w-full sm:w-auto sm:flex-row">
-            <Button
-              onClick={() => navigate("/upload")}
-              className="bg-gradient-primary shadow-glow w-full"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Prompt hochladen
-            </Button>
-            <Button
-              onClick={() => navigate("/prompt-extractor")}
-              variant="outline"
-              className="gap-2 w-full hidden sm:flex"
-            >
-              <Upload className="h-4 w-4" />
-              Prompt extrahieren
-            </Button>
-            <Button
-              onClick={() => navigate("/prompt-creator")}
-              variant="outline"
-              className="gap-2 w-full"
-            >
-              <Sparkles className="h-4 w-4" />
-              Selbst Inspiration geben
-            </Button>
-          </div>
-        )}
+        <div className="flex flex-col gap-2 w-full sm:w-auto sm:flex-row">
+          <Button
+            onClick={() => {
+              if (!session) {
+                toast({
+                  variant: "destructive",
+                  title: "Anmeldung erforderlich",
+                  description: "Bitte melde dich an, um Prompts hochzuladen.",
+                });
+                navigate("/auth");
+                return;
+              }
+              navigate("/upload");
+            }}
+            className="bg-gradient-primary shadow-glow w-full"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Prompt hochladen
+          </Button>
+          <Button
+            onClick={() => {
+              if (!session) {
+                toast({
+                  variant: "destructive",
+                  title: "Anmeldung erforderlich",
+                  description: "Bitte melde dich an, um Prompts zu extrahieren.",
+                });
+                navigate("/auth");
+                return;
+              }
+              navigate("/prompt-extractor");
+            }}
+            variant="outline"
+            className="gap-2 w-full hidden sm:flex"
+          >
+            <Upload className="h-4 w-4" />
+            Prompt extrahieren
+          </Button>
+          <Button
+            onClick={() => {
+              if (!session) {
+                toast({
+                  variant: "destructive",
+                  title: "Anmeldung erforderlich",
+                  description: "Bitte melde dich an, um Inspiration zu geben.",
+                });
+                navigate("/auth");
+                return;
+              }
+              navigate("/prompt-creator");
+            }}
+            variant="outline"
+            className="gap-2 w-full"
+          >
+            <Sparkles className="h-4 w-4" />
+            Selbst Inspiration geben
+          </Button>
+        </div>
       </div>
 
       {/* Prompts Grid */}
