@@ -74,6 +74,7 @@ const Index = () => {
           *,
           profiles:creator_id (display_name)
         `)
+        .eq('visibility', 'public')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

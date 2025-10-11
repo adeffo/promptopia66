@@ -208,6 +208,7 @@ export type Database = {
           tags: string[] | null
           title: string
           updated_at: string
+          visibility: string
         }
         Insert: {
           average_rating?: number | null
@@ -226,6 +227,7 @@ export type Database = {
           tags?: string[] | null
           title: string
           updated_at?: string
+          visibility?: string
         }
         Update: {
           average_rating?: number | null
@@ -244,6 +246,7 @@ export type Database = {
           tags?: string[] | null
           title?: string
           updated_at?: string
+          visibility?: string
         }
         Relationships: [
           {

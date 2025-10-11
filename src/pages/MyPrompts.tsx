@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Upload } from "lucide-react";
 
 interface Prompt {
   id: string;
@@ -128,12 +128,20 @@ const MyPrompts = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-3xl font-bold">Meine Prompts</h1>
-          <Button asChild variant="outline" className="gap-2">
-            <Link to="/prompt-creator">
-              <Sparkles className="h-4 w-4" />
-              Selbst Inspiration geben
-            </Link>
-          </Button>
+          <div className="flex gap-2 flex-wrap">
+            <Button asChild variant="outline" className="gap-2">
+              <Link to="/upload">
+                <Upload className="h-4 w-4" />
+                Prompt hochladen
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="gap-2">
+              <Link to="/prompt-creator">
+                <Sparkles className="h-4 w-4" />
+                Selbst Inspiration geben
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="created" className="w-full">

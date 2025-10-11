@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, Lock, Globe } from "lucide-react";
 import { Session } from "@supabase/supabase-js";
 import { promptSchema } from "@/lib/validations";
 import { z } from "zod";
@@ -39,6 +40,7 @@ const UploadPrompt = () => {
   const [difficulty, setDifficulty] = useState("");
   const [tags, setTags] = useState("");
   const [genre, setGenre] = useState("");
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [autoCompleting, setAutoCompleting] = useState(false);
   
   const navigate = useNavigate();
@@ -314,6 +316,7 @@ const UploadPrompt = () => {
           model_used: validatedData.model_used,
           difficulty: validatedData.difficulty,
           genre: genre || undefined,
+          visibility,
         });
 
       if (insertError) throw insertError;
@@ -499,6 +502,42 @@ const UploadPrompt = () => {
                 <p className="text-xs text-muted-foreground">
                   Trenne mehrere Tags mit Kommas (max. 10 Tags)
                 </p>
+              </div>
+
+              {/* Visibility */}
+              <div className="space-y-3">
+                <Label>Sichtbarkeit</Label>
+                <RadioGroup
+                  value={visibility}
+                  onValueChange={(value) => setVisibility(value as "public" | "private")}
+                  disabled={loading}
+                  className="flex flex-col gap-3"
+                >
+                  <div className="flex items-center space-x-3 rounded-lg border border-border/40 p-4 hover:bg-accent/10 transition-colors">
+                    <RadioGroupItem value="public" id="public" />
+                    <Label htmlFor="public" className="flex-1 cursor-pointer font-normal">
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-primary" />
+                        <span className="font-medium">Öffentlich</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Wird im Marketplace angezeigt und ist für alle sichtbar
+                      </p>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-3 rounded-lg border border-border/40 p-4 hover:bg-accent/10 transition-colors">
+                    <RadioGroupItem value="private" id="private" />
+                    <Label htmlFor="private" className="flex-1 cursor-pointer font-normal">
+                      <div className="flex items-center gap-2">
+                        <Lock className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">Privat</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Nur für dich sichtbar in "Meine Prompts"
+                      </p>
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
 
               {/* Submit Button */}
