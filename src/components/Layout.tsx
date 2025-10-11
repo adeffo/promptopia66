@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Sparkles, User, LogOut, Settings, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Footer } from "@/components/Footer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +38,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container relative flex h-16 items-center justify-between px-4">
@@ -200,7 +201,8 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
       </header>
 
       {/* Main Content */}
-      <main className="container px-4 py-8">{children}</main>
+      <main className="container px-4 py-8 flex-1">{children}</main>
+      <Footer />
     </div>
   );
 };
