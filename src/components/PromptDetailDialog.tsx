@@ -19,6 +19,8 @@ import { commentSchema } from "@/lib/validations";
 import { z } from "zod";
 import { StarRating } from "./StarRating";
 import { UserProfileDialog } from "./UserProfileDialog";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Languages } from "lucide-react";
 
 interface Comment {
   id: string;
@@ -27,6 +29,8 @@ interface Comment {
   profiles: {
     display_name: string | null;
   } | null;
+  translatedText?: string;
+  isTranslated?: boolean;
 }
 
 interface PromptDetailDialogProps {
@@ -50,7 +54,9 @@ export const PromptDetailDialog = ({
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [userProfileDialogOpen, setUserProfileDialogOpen] = useState(false);
+  const [translatingComments, setTranslatingComments] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
+  const { language, t } = useLanguage();
 
   useEffect(() => {
     if (promptId && open) {

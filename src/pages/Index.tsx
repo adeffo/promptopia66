@@ -5,6 +5,7 @@ import { PromptDetailDialog } from "@/components/PromptDetailDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Search, Sparkles, Plus, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ const Index = () => {
   const [selectedPromptId, setSelectedPromptId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -92,14 +94,14 @@ const Index = () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast({
-        title: "Fehler beim Abmelden",
+        title: t('toast.error'),
         description: error.message,
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Erfolgreich abgemeldet",
-        description: "Bis bald!",
+        title: t('toast.logoutSuccess'),
+        description: t('toast.logoutSuccessDesc'),
       });
     }
   };
@@ -147,11 +149,10 @@ const Index = () => {
           </div>
         </div>
         <h1 className="mb-4 bg-gradient-hero bg-clip-text text-5xl font-bold text-transparent">
-          Entdecke KI-Prompts
+          {t('hero.title')}
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-          Die beste Community-Plattform für kreative KI-Prompts. Teile deine Kreationen,
-          entdecke Inspiration und nimm an Contests teil.
+          {t('hero.description')}
         </p>
       </div>
 
@@ -162,7 +163,7 @@ const Index = () => {
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Suche nach Prompts, Tags oder Creators..."
+              placeholder={t('search.placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-12 pl-12 pr-4 border-border/40 bg-card/50 backdrop-blur w-full"
@@ -173,14 +174,14 @@ const Index = () => {
               <SelectValue placeholder="Sortieren nach..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="created_at_desc">Zuletzt hochgeladen</SelectItem>
-              <SelectItem value="created_at_asc">Älteste zuerst</SelectItem>
-              <SelectItem value="rating_desc">Bewertung: Hoch → Niedrig</SelectItem>
-              <SelectItem value="rating_asc">Bewertung: Niedrig → Hoch</SelectItem>
-              <SelectItem value="favorites_desc">Favoriten: Viel → Wenig</SelectItem>
-              <SelectItem value="favorites_asc">Favoriten: Wenig → Viel</SelectItem>
-              <SelectItem value="comments_desc">Kommentare: Viel → Wenig</SelectItem>
-              <SelectItem value="comments_asc">Kommentare: Wenig → Viel</SelectItem>
+              <SelectItem value="created_at_desc">{t('sort.latest')}</SelectItem>
+              <SelectItem value="created_at_asc">{t('sort.oldest')}</SelectItem>
+              <SelectItem value="rating_desc">{t('sort.ratingDesc')}</SelectItem>
+              <SelectItem value="rating_asc">{t('sort.ratingAsc')}</SelectItem>
+              <SelectItem value="favorites_desc">{t('sort.favoritesDesc')}</SelectItem>
+              <SelectItem value="favorites_asc">{t('sort.favoritesAsc')}</SelectItem>
+              <SelectItem value="comments_desc">{t('sort.commentsDesc')}</SelectItem>
+              <SelectItem value="comments_asc">{t('sort.commentsAsc')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -190,8 +191,8 @@ const Index = () => {
               if (!session) {
                 toast({
                   variant: "destructive",
-                  title: "Anmeldung erforderlich",
-                  description: "Bitte melde dich an, um Prompts hochzuladen.",
+                  title: t('toast.loginRequired'),
+                  description: t('toast.loginRequiredDesc'),
                 });
                 navigate("/auth");
                 return;
@@ -201,15 +202,15 @@ const Index = () => {
             className="bg-gradient-primary shadow-glow w-full"
           >
             <Plus className="mr-2 h-4 w-4" />
-            Prompt hochladen
+            {t('btn.uploadPrompt')}
           </Button>
           <Button
             onClick={() => {
               if (!session) {
                 toast({
                   variant: "destructive",
-                  title: "Anmeldung erforderlich",
-                  description: "Bitte melde dich an, um Prompts zu extrahieren.",
+                  title: t('toast.loginRequired'),
+                  description: t('toast.loginRequiredDesc'),
                 });
                 navigate("/auth");
                 return;
@@ -220,15 +221,15 @@ const Index = () => {
             className="gap-2 w-full hidden sm:flex"
           >
             <Upload className="h-4 w-4" />
-            Prompt extrahieren
+            {t('btn.extractPrompt')}
           </Button>
           <Button
             onClick={() => {
               if (!session) {
                 toast({
                   variant: "destructive",
-                  title: "Anmeldung erforderlich",
-                  description: "Bitte melde dich an, um Inspiration zu geben.",
+                  title: t('toast.loginRequired'),
+                  description: t('toast.loginRequiredDesc'),
                 });
                 navigate("/auth");
                 return;
@@ -239,7 +240,7 @@ const Index = () => {
             className="gap-2 w-full"
           >
             <Sparkles className="h-4 w-4" />
-            Selbst Inspiration geben
+            {t('btn.giveInspiration')}
           </Button>
         </div>
       </div>
@@ -247,7 +248,7 @@ const Index = () => {
       {/* Prompts Grid */}
       {loading ? (
         <div className="py-12 text-center">
-          <p className="text-muted-foreground">Lädt Prompts...</p>
+          <p className="text-muted-foreground">{t('loading.prompts')}</p>
         </div>
       ) : filteredPrompts.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -272,7 +273,7 @@ const Index = () => {
       ) : (
         <div className="py-12 text-center">
           <p className="text-muted-foreground">
-            {searchQuery ? "Keine Prompts gefunden." : "Noch keine Prompts vorhanden. Sei der Erste!"}
+            {searchQuery ? t('empty.noResults') : t('empty.noPrompts')}
           </p>
         </div>
       )}

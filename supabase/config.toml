@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.extract-prompt]
 verify_jwt = false
+
+[functions.translate-comment]
+verify_jwt = false

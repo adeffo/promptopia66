@@ -1,0 +1,89 @@
+export default {
+  // Navigation
+  'nav.marketplace': 'Marketplace',
+  'nav.contests': 'Contests',
+  'nav.leaderboard': 'Leaderboard',
+  'nav.myPrompts': 'My Prompts',
+  'nav.profile': 'Profile',
+  'nav.settings': 'Settings',
+  'nav.logout': 'Logout',
+  'nav.login': 'Login',
+  
+  // Buttons
+  'btn.uploadPrompt': 'Upload Prompt',
+  'btn.extractPrompt': 'Extract Prompt',
+  'btn.giveInspiration': 'Give Inspiration',
+  'btn.copy': 'Copy',
+  'btn.save': 'Save',
+  'btn.cancel': 'Cancel',
+  'btn.delete': 'Delete',
+  'btn.edit': 'Edit',
+  'btn.translate': 'Translate',
+  'btn.showOriginal': 'Show Original',
+  
+  // Hero Section
+  'hero.title': 'Discover AI Prompts',
+  'hero.description': 'The best community platform for creative AI prompts. Share your creations, discover inspiration, and participate in contests.',
+  
+  // Search & Filter
+  'search.placeholder': 'Search for prompts, tags or creators...',
+  'sort.latest': 'Latest uploaded',
+  'sort.oldest': 'Oldest first',
+  'sort.ratingDesc': 'Rating: High → Low',
+  'sort.ratingAsc': 'Rating: Low → High',
+  'sort.favoritesDesc': 'Favorites: Many → Few',
+  'sort.favoritesAsc': 'Favorites: Few → Many',
+  'sort.commentsDesc': 'Comments: Many → Few',
+  'sort.commentsAsc': 'Comments: Few → Many',
+  
+  // Auth
+  'auth.welcome': 'Welcome',
+  'auth.description': 'Sign in or create a new account',
+  'auth.email': 'Email',
+  'auth.password': 'Password',
+  'auth.signin': 'Sign In',
+  'auth.signup': 'Sign Up',
+  'auth.or': 'Or',
+  'auth.googleSignin': 'Sign in with Google',
+  'auth.googleSignup': 'Sign up with Google',
+  'auth.tagline': 'Your platform for AI prompts',
+  'auth.emailPlaceholder': 'your@email.com',
+  'auth.passwordPlaceholder': '••••••••',
+  
+  // Toast Messages
+  'toast.loginRequired': 'Login Required',
+  'toast.loginRequiredDesc': 'Please log in to use this feature.',
+  'toast.logoutSuccess': 'Successfully logged out',
+  'toast.logoutSuccessDesc': 'See you soon!',
+  'toast.loginSuccess': 'Login successful!',
+  'toast.loginSuccessDesc': 'Welcome back to PromptHub.',
+  'toast.signupSuccess': 'Registration successful!',
+  'toast.signupSuccessDesc': 'You can now log in.',
+  'toast.error': 'Error',
+  'toast.loadError': 'Error loading',
+  'toast.translationSuccess': 'Translation successful',
+  'toast.translationError': 'Translation failed',
+  
+  // Comments
+  'comments.title': 'Comments',
+  'comments.add': 'Add Comment',
+  'comments.placeholder': 'Write a comment...',
+  'comments.empty': 'No comments yet. Be the first!',
+  'comments.translated': 'Translated',
+  
+  // Loading
+  'loading.prompts': 'Loading prompts...',
+  'loading.wait': 'Loading...',
+  'loading.analyzing': 'Analyzing your image... This may take up to 30 seconds.',
+  
+  // Empty States
+  'empty.noPrompts': 'No prompts yet. Be the first!',
+  'empty.noResults': 'No prompts found.',
+  
+  // Prompt Details
+  'prompt.createdBy': 'Created by',
+  'prompt.rating': 'Rating',
+  'prompt.favorites': 'Favorites',
+  'prompt.comments': 'Comments',
+  'prompt.tags': 'Tags',
+};

@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NotificationBell } from "@/components/NotificationBell";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Sheet,
   SheetContent,
@@ -30,13 +32,14 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleProtectedNavigation = (path: string, requiresAuth: boolean = false) => {
     if (requiresAuth && !user) {
       toast({
         variant: "destructive",
-        title: "Anmeldung erforderlich",
-        description: "Bitte melde dich an, um diese Funktion zu nutzen.",
+        title: t('toast.loginRequired'),
+        description: t('toast.loginRequiredDesc'),
       });
       navigate("/auth");
       return;
@@ -45,10 +48,10 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
   };
 
   const navItems = [
-    { label: "Marketplace", path: "/" },
-    { label: "Contests", path: "/contests" },
-    { label: "Leaderboard", path: "/leaderboard" },
-    { label: "Meine Prompts", path: "/my-prompts", requiresAuth: true },
+    { label: t('nav.marketplace'), path: "/" },
+    { label: t('nav.contests'), path: "/contests" },
+    { label: t('nav.leaderboard'), path: "/leaderboard" },
+    { label: t('nav.myPrompts'), path: "/my-prompts", requiresAuth: true },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -90,28 +93,28 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                     className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 text-left"
                   >
                     <Upload className="h-4 w-4" />
-                    Prompt extrahieren
+                    {t('btn.extractPrompt')}
                   </button>
                   <button
                     onClick={() => handleProtectedNavigation("/prompt-creator", true)}
                     className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 text-left"
                   >
                     <Sparkles className="h-4 w-4" />
-                    Selbst Inspiration geben
+                    {t('btn.giveInspiration')}
                   </button>
                   <button
                     onClick={() => handleProtectedNavigation("/profile", true)}
                     className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center gap-2 text-left"
                   >
                     <User className="h-4 w-4" />
-                    Profil
+                    {t('nav.profile')}
                   </button>
                   <button
                     onClick={() => handleProtectedNavigation("/settings", true)}
                     className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center gap-2 text-left"
                   >
                     <Settings className="h-4 w-4" />
-                    Einstellungen
+                    {t('nav.settings')}
                   </button>
                   {user && (
                     <>
@@ -122,7 +125,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                         className="justify-start text-destructive hover:text-destructive"
                       >
                         <LogOut className="mr-2 h-4 w-4" />
-                        Abmelden
+                        {t('nav.logout')}
                       </Button>
                     </>
                   )}
@@ -130,7 +133,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                     <>
                       <div className="my-2 border-t border-border" />
                       <Button asChild className="bg-gradient-primary shadow-glow">
-                        <Link to="/auth">Anmelden</Link>
+                        <Link to="/auth">{t('nav.login')}</Link>
                       </Button>
                     </>
                   )}
@@ -165,8 +168,9 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
             </nav>
           </div>
 
-          {/* Right: Notifications & User Menu / Auth Buttons */}
+          {/* Right: Language Switcher, Notifications & User Menu / Auth Buttons */}
           <div className="flex items-center gap-2 md:gap-3">
+            <LanguageSwitcher />
             {user && (
               <>
                 <NotificationBell userId={user.id} />
@@ -189,25 +193,25 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                       <DropdownMenuItem asChild>
                         <Link to="/profile" className="cursor-pointer">
                           <User className="mr-2 h-4 w-4" />
-                          Profil
+                          {t('nav.profile')}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link to="/settings" className="cursor-pointer">
                           <Settings className="mr-2 h-4 w-4" />
-                          Einstellungen
+                          {t('nav.settings')}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link to="/prompt-creator" className="cursor-pointer text-primary">
                           <Sparkles className="mr-2 h-4 w-4" />
-                          Selbst Inspiration geben
+                          {t('btn.giveInspiration')}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={onLogout} className="cursor-pointer text-destructive">
                         <LogOut className="mr-2 h-4 w-4" />
-                        Abmelden
+                        {t('nav.logout')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -216,7 +220,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
             )}
             {!user && (
               <Button asChild variant="default" size="sm" className="hidden md:flex bg-gradient-primary shadow-glow">
-                <Link to="/auth">Anmelden</Link>
+                <Link to="/auth">{t('nav.login')}</Link>
               </Button>
             )}
           </div>
