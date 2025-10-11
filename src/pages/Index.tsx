@@ -5,7 +5,7 @@ import { PromptDetailDialog } from "@/components/PromptDetailDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Sparkles, Plus } from "lucide-react";
+import { Search, Sparkles, Plus, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -192,6 +192,14 @@ const Index = () => {
             >
               <Plus className="mr-2 h-4 w-4" />
               Prompt hochladen
+            </Button>
+            <Button
+              onClick={() => navigate("/prompt-extractor")}
+              variant="outline"
+              className="gap-2 w-full hidden sm:flex"
+            >
+              <Upload className="h-4 w-4" />
+              Prompt extrahieren
             </Button>
             <Button
               onClick={() => navigate("/prompt-creator")}

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Sparkles, User, LogOut, Settings, Menu } from "lucide-react";
+import { Sparkles, User, LogOut, Settings, Menu, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Footer } from "@/components/Footer";
@@ -71,6 +71,13 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                   {user && (
                     <>
                       <div className="my-2 border-t border-border" />
+                      <Link
+                        to="/prompt-extractor"
+                        className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
+                      >
+                        <Upload className="h-4 w-4" />
+                        Prompt extrahieren
+                      </Link>
                       <Link
                         to="/prompt-creator"
                         className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"

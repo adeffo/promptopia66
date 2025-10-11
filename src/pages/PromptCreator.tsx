@@ -30,7 +30,14 @@ interface PromptData {
 
 const PromptCreator = () => {
   const [session, setSession] = useState<Session | null>(null);
-  const [idea, setIdea] = useState("");
+  const [idea, setIdea] = useState(() => {
+    const extracted = sessionStorage.getItem("extractedPrompt");
+    if (extracted) {
+      sessionStorage.removeItem("extractedPrompt");
+      return extracted;
+    }
+    return "";
+  });
   const [loading, setLoading] = useState(false);
   const [promptData, setPromptData] = useState<PromptData | null>(null);
   const navigate = useNavigate();

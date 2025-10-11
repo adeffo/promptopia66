@@ -18,9 +18,23 @@ const UploadPrompt = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const [imagePreview, setImagePreview] = useState<string>(() => {
+    const stored = sessionStorage.getItem("uploadPromptImage");
+    if (stored) {
+      sessionStorage.removeItem("uploadPromptImage");
+      return stored;
+    }
+    return "";
+  });
   const [title, setTitle] = useState("");
-  const [promptText, setPromptText] = useState("");
+  const [promptText, setPromptText] = useState(() => {
+    const stored = sessionStorage.getItem("uploadPromptText");
+    if (stored) {
+      sessionStorage.removeItem("uploadPromptText");
+      return stored;
+    }
+    return "";
+  });
   const [modelUsed, setModelUsed] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [tags, setTags] = useState("");

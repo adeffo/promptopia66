@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.optimize-prompt]
 verify_jwt = false
+
+[functions.extract-prompt]
+verify_jwt = false
