@@ -96,7 +96,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                     {t('btn.extractPrompt')}
                   </button>
                   <button
-                    onClick={() => handleProtectedNavigation("/prompt-creator", true)}
+                    onClick={() => handleProtectedNavigation("/prompt-creator", false)}
                     className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 text-left"
                   >
                     <Sparkles className="h-4 w-4" />
@@ -219,9 +219,22 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
               </>
             )}
             {!user && (
-              <Button asChild variant="default" size="sm" className="hidden md:flex bg-gradient-primary shadow-glow">
-                <Link to="/auth">{t('nav.login')}</Link>
-              </Button>
+              <>
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                  className="hidden md:flex text-primary hover:text-primary"
+                >
+                  <Link to="/prompt-creator">
+                    <Sparkles className="mr-1 h-4 w-4" />
+                    {t('btn.generatePrompt')}
+                  </Link>
+                </Button>
+                <Button asChild variant="default" size="sm" className="hidden md:flex bg-gradient-primary shadow-glow">
+                  <Link to="/auth">{t('nav.login')}</Link>
+                </Button>
+              </>
             )}
           </div>
         </div>
