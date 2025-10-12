@@ -2,7 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import UploadPrompt from "./pages/UploadPrompt";
@@ -16,6 +18,29 @@ import Settings from "./pages/Settings";
 import UserPrompts from "./pages/UserPrompts";
 import NotFound from "./pages/NotFound";
 
+const AuthSync = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session && location.pathname === "/auth") {
+        navigate("/");
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session && location.pathname === "/auth") {
+        navigate("/");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, location.pathname]);
+
+  return null;
+};
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -24,6 +49,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <AuthSync />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
