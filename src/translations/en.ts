@@ -26,7 +26,8 @@ export default {
   // Hero Section
   'hero.title': 'Welcome to Promptopia',
   'hero.subtitle': 'The place where ideas become images.',
-  'hero.description': 'Discover unique prompts or let AI put your vision into words.',
+  'hero.description': 'Discover unique prompts or let AI turn your vision into words.',
+  'hero.loginHint': 'Sign in to save your own prompts and favorite the best ideas from others.',
   
   // Search & Filter
   'search.placeholder': 'Search for prompts, tags or creators...',

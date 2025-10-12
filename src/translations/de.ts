@@ -27,6 +27,7 @@ export default {
   'hero.title': 'Willkommen bei Promptopia',
   'hero.subtitle': 'Der Ort, an dem Ideen zu Bildern werden.',
   'hero.description': 'Entdecke einzigartige Prompts oder lass die KI deine Vision in Worte fassen.',
+  'hero.loginHint': 'Melde dich an, um eigene Prompts zu speichern und die besten Ideen anderer zu favorisieren.',
   
   // Search & Filter
   'search.placeholder': 'Suche nach Prompts, Tags oder Creators...',

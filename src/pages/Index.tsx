@@ -165,8 +165,11 @@ const Index = () => {
           <p className="mb-2 text-xl font-semibold text-foreground md:text-2xl">
             {t('hero.subtitle')}
           </p>
-          <p className="mx-auto mb-12 max-w-2xl text-lg text-muted-foreground">
+          <p className="mx-auto mb-4 max-w-2xl text-lg text-muted-foreground">
             {t('hero.description')}
+          </p>
+          <p className="mx-auto mb-12 max-w-2xl text-base font-bold bg-gradient-primary bg-clip-text text-transparent">
+            {t('hero.loginHint')}
           </p>
           
           {/* Action Buttons */}
@@ -183,18 +186,7 @@ const Index = () => {
               {t('btn.discoverPrompts')}
             </Button>
             <Button
-              onClick={() => {
-                if (!session) {
-                  toast({
-                    variant: "destructive",
-                    title: t('toast.loginRequired'),
-                    description: t('toast.loginRequiredDesc'),
-                  });
-                  navigate("/auth");
-                  return;
-                }
-                navigate("/prompt-creator");
-              }}
+              onClick={() => navigate("/prompt-creator")}
               size="lg"
               variant="outline"
               className="w-full h-14 text-base"
@@ -203,18 +195,7 @@ const Index = () => {
               {t('btn.generatePrompt')}
             </Button>
             <Button
-              onClick={() => {
-                if (!session) {
-                  toast({
-                    variant: "destructive",
-                    title: t('toast.loginRequired'),
-                    description: t('toast.loginRequiredDesc'),
-                  });
-                  navigate("/auth");
-                  return;
-                }
-                navigate("/prompt-extractor");
-              }}
+              onClick={() => navigate("/prompt-extractor")}
               size="lg"
               variant="outline"
               className="w-full h-14 text-base"
