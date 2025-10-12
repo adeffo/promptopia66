@@ -20,7 +20,7 @@ export const Footer = () => {
               </svg>
             </a>
             <a
-              href="mailto:6r1an6r0wn1@gmail.com"
+              href="mailto:brian@promptopia.info"
               className="text-muted-foreground hover:text-primary transition-colors"
               aria-label="Email"
             >
