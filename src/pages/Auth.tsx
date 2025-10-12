@@ -21,12 +21,16 @@ const Auth = () => {
   const { t } = useLanguage();
 
   useEffect(() => {
-    // Redirect if already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/");
-      }
+    // Listen for auth changes then check existing session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) navigate("/");
     });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) navigate("/");
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -128,6 +132,46 @@ const Auth = () => {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Fehler bei der Anmeldung",
+        description: error.message,
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Fehler bei der Anmeldung",
+        description: error.message,
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
@@ -214,10 +258,27 @@ const Auth = () => {
                     onClick={handleGoogleSignIn}
                     disabled={loading}
                   >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-...
-                    </svg>
                     {t('auth.googleSignin')}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleAppleSignIn}
+                    disabled={loading}
+                  >
+                    {t('auth.appleSignin')}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleFacebookSignIn}
+                    disabled={loading}
+                  >
+                    {t('auth.facebookSignin')}
                   </Button>
                 </form>
               </TabsContent>
@@ -277,10 +338,27 @@ const Auth = () => {
                     onClick={handleGoogleSignIn}
                     disabled={loading}
                   >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-...
-                    </svg>
                     {t('auth.googleSignup')}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleAppleSignIn}
+                    disabled={loading}
+                  >
+                    {t('auth.appleSignup')}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleFacebookSignIn}
+                    disabled={loading}
+                  >
+                    {t('auth.facebookSignup')}
                   </Button>
                 </form>
               </TabsContent>
