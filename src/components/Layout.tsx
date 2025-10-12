@@ -14,13 +14,7 @@ import {
 import { NotificationBell } from "@/components/NotificationBell";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/contexts/LanguageContext";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -38,8 +32,8 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
     if (requiresAuth && !user) {
       toast({
         variant: "destructive",
-        title: t('toast.loginRequired'),
-        description: t('toast.loginRequiredDesc'),
+        title: t("toast.loginRequired"),
+        description: t("toast.loginRequiredDesc"),
       });
       navigate("/auth");
       return;
@@ -48,10 +42,10 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
   };
 
   const navItems = [
-    { label: t('nav.gallery'), path: "/" },
-    { label: t('nav.contests'), path: "/contests" },
-    { label: t('nav.leaderboard'), path: "/leaderboard" },
-    { label: t('nav.myPrompts'), path: "/my-prompts", requiresAuth: true },
+    { label: t("nav.gallery"), path: "/" },
+    { label: t("nav.contests"), path: "/contests" },
+    { label: t("nav.leaderboard"), path: "/leaderboard" },
+    { label: t("nav.myPrompts"), path: "/my-prompts", requiresAuth: true },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -93,28 +87,28 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                     className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 text-left"
                   >
                     <Upload className="h-4 w-4" />
-                    {t('btn.extractPrompt')}
+                    {t("btn.extractPrompt")}
                   </button>
                   <button
                     onClick={() => handleProtectedNavigation("/prompt-creator", false)}
                     className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 text-left"
                   >
                     <Sparkles className="h-4 w-4" />
-                    {t('btn.generatePrompt')}
+                    {t("btn.generatePrompt")}
                   </button>
                   <button
                     onClick={() => handleProtectedNavigation("/profile", true)}
                     className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center gap-2 text-left"
                   >
                     <User className="h-4 w-4" />
-                    {t('nav.profile')}
+                    {t("nav.profile")}
                   </button>
                   <button
                     onClick={() => handleProtectedNavigation("/settings", true)}
                     className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center gap-2 text-left"
                   >
                     <Settings className="h-4 w-4" />
-                    {t('nav.settings')}
+                    {t("nav.settings")}
                   </button>
                   {user && (
                     <>
@@ -125,7 +119,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                         className="justify-start text-destructive hover:text-destructive"
                       >
                         <LogOut className="mr-2 h-4 w-4" />
-                        {t('nav.logout')}
+                        {t("nav.logout")}
                       </Button>
                     </>
                   )}
@@ -133,7 +127,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                     <>
                       <div className="my-2 border-t border-border" />
                       <Button asChild className="bg-gradient-primary shadow-glow">
-                        <Link to="/auth">{t('nav.login')}</Link>
+                        <Link to="/auth">{t("nav.login")}</Link>
                       </Button>
                     </>
                   )}
@@ -148,11 +142,9 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
               <div className="rounded-lg bg-gradient-primary p-2 shadow-glow">
                 <Sparkles className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="bg-gradient-primary bg-clip-text text-lg font-bold text-transparent">
-                PromptHub
-              </span>
+              <span className="bg-gradient-primary bg-clip-text text-lg font-bold text-transparent">Promptopia</span>
             </Link>
-            
+
             <nav className="hidden items-center gap-6 md:flex">
               {navItems.map((item) => (
                 <button
@@ -193,25 +185,25 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                       <DropdownMenuItem asChild>
                         <Link to="/profile" className="cursor-pointer">
                           <User className="mr-2 h-4 w-4" />
-                          {t('nav.profile')}
+                          {t("nav.profile")}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link to="/settings" className="cursor-pointer">
                           <Settings className="mr-2 h-4 w-4" />
-                          {t('nav.settings')}
+                          {t("nav.settings")}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link to="/prompt-creator" className="cursor-pointer text-primary">
                           <Sparkles className="mr-2 h-4 w-4" />
-                          {t('btn.generatePrompt')}
+                          {t("btn.generatePrompt")}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={onLogout} className="cursor-pointer text-destructive">
                         <LogOut className="mr-2 h-4 w-4" />
-                        {t('nav.logout')}
+                        {t("nav.logout")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -220,19 +212,14 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
             )}
             {!user && (
               <>
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="sm"
-                  className="hidden md:flex text-primary hover:text-primary"
-                >
+                <Button asChild variant="ghost" size="sm" className="hidden md:flex text-primary hover:text-primary">
                   <Link to="/prompt-creator">
                     <Sparkles className="mr-1 h-4 w-4" />
-                    {t('btn.generatePrompt')}
+                    {t("btn.generatePrompt")}
                   </Link>
                 </Button>
                 <Button asChild variant="default" size="sm" className="hidden md:flex bg-gradient-primary shadow-glow">
-                  <Link to="/auth">{t('nav.login')}</Link>
+                  <Link to="/auth">{t("nav.login")}</Link>
                 </Button>
               </>
             )}
