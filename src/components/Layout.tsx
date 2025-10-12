@@ -48,7 +48,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
   };
 
   const navItems = [
-    { label: t('nav.marketplace'), path: "/" },
+    { label: t('nav.gallery'), path: "/" },
     { label: t('nav.contests'), path: "/contests" },
     { label: t('nav.leaderboard'), path: "/leaderboard" },
     { label: t('nav.myPrompts'), path: "/my-prompts", requiresAuth: true },

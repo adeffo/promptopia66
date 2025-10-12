@@ -1,6 +1,7 @@
 export default {
   // Navigation
-  'nav.marketplace': 'Marktplatz',
+  'nav.gallery': 'Prompt-Gallerie',
+  'nav.marketplace': 'Prompt-Gallerie',
   'nav.contests': 'Contests',
   'nav.leaderboard': 'Leaderboard',
   'nav.myPrompts': 'Meine Prompts',

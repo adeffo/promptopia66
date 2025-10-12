@@ -9,7 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Search, Sparkles, Plus, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -41,10 +41,18 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPromptId, setSelectedPromptId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [showMarketplace, setShowMarketplace] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [showMarketplace, setShowMarketplace] = useState(searchParams.get('view') === 'gallery');
   const { toast } = useToast();
   const { t } = useLanguage();
   const navigate = useNavigate();
+
+  // Reset to landing page when navigating back to home without query params
+  useEffect(() => {
+    if (searchParams.get('view') !== 'gallery') {
+      setShowMarketplace(false);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Set up auth state listener
@@ -164,7 +172,10 @@ const Index = () => {
           {/* Action Buttons */}
           <div className="flex flex-col gap-4 w-full max-w-md px-4">
             <Button
-              onClick={() => setShowMarketplace(true)}
+              onClick={() => {
+                setShowMarketplace(true);
+                setSearchParams({ view: 'gallery' });
+              }}
               size="lg"
               className="bg-gradient-primary shadow-glow w-full h-14 text-base"
             >
@@ -215,10 +226,10 @@ const Index = () => {
         </div>
       ) : (
         <>
-          {/* Marketplace View */}
+          {/* Gallery View */}
           <div className="mb-8 text-center">
             <h1 className="mb-4 bg-gradient-hero bg-clip-text text-4xl font-bold text-transparent">
-              {t('nav.marketplace')}
+              {t('nav.gallery')}
             </h1>
           </div>
 
