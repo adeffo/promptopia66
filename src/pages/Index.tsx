@@ -41,6 +41,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPromptId, setSelectedPromptId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [showMarketplace, setShowMarketplace] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -142,141 +143,207 @@ const Index = () => {
 
   return (
     <Layout user={session?.user} onLogout={handleLogout}>
-      {/* Hero Section */}
-      <div className="mb-12 text-center">
-        <div className="mb-6 inline-flex items-center gap-3">
-          <div className="rounded-xl bg-gradient-primary p-3 shadow-glow animate-glow">
-            <Sparkles className="h-8 w-8 text-primary-foreground" />
-          </div>
-        </div>
-        <h1 className="mb-4 bg-gradient-hero bg-clip-text text-5xl font-bold text-transparent">
-          {t('hero.title')}
-        </h1>
-        <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-          {t('hero.description')}
-        </p>
-      </div>
-
-      {/* Search Bar, Filter & Upload Button */}
-      <div className="mb-8 flex flex-col gap-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder={t('search.placeholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-12 pl-12 pr-4 border-border/40 bg-card/50 backdrop-blur w-full"
-            />
-          </div>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full sm:w-[240px] h-12">
-              <SelectValue placeholder="Sortieren nach..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="created_at_desc">{t('sort.latest')}</SelectItem>
-              <SelectItem value="created_at_asc">{t('sort.oldest')}</SelectItem>
-              <SelectItem value="rating_desc">{t('sort.ratingDesc')}</SelectItem>
-              <SelectItem value="rating_asc">{t('sort.ratingAsc')}</SelectItem>
-              <SelectItem value="favorites_desc">{t('sort.favoritesDesc')}</SelectItem>
-              <SelectItem value="favorites_asc">{t('sort.favoritesAsc')}</SelectItem>
-              <SelectItem value="comments_desc">{t('sort.commentsDesc')}</SelectItem>
-              <SelectItem value="comments_asc">{t('sort.commentsAsc')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex flex-col gap-2 w-full sm:w-auto sm:flex-row">
-          <Button
-            onClick={() => {
-              if (!session) {
-                toast({
-                  variant: "destructive",
-                  title: t('toast.loginRequired'),
-                  description: t('toast.loginRequiredDesc'),
-                });
-                navigate("/auth");
-                return;
-              }
-              navigate("/upload");
-            }}
-            className="bg-gradient-primary shadow-glow w-full"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            {t('btn.uploadPrompt')}
-          </Button>
-          <Button
-            onClick={() => {
-              if (!session) {
-                toast({
-                  variant: "destructive",
-                  title: t('toast.loginRequired'),
-                  description: t('toast.loginRequiredDesc'),
-                });
-                navigate("/auth");
-                return;
-              }
-              navigate("/prompt-extractor");
-            }}
-            variant="outline"
-            className="gap-2 w-full hidden sm:flex"
-          >
-            <Upload className="h-4 w-4" />
-            {t('btn.extractPrompt')}
-          </Button>
-          <Button
-            onClick={() => {
-              if (!session) {
-                toast({
-                  variant: "destructive",
-                  title: t('toast.loginRequired'),
-                  description: t('toast.loginRequiredDesc'),
-                });
-                navigate("/auth");
-                return;
-              }
-              navigate("/prompt-creator");
-            }}
-            variant="outline"
-            className="gap-2 w-full"
-          >
-            <Sparkles className="h-4 w-4" />
-            {t('btn.giveInspiration')}
-          </Button>
-        </div>
-      </div>
-
-      {/* Prompts Grid */}
-      {loading ? (
-        <div className="py-12 text-center">
-          <p className="text-muted-foreground">{t('loading.prompts')}</p>
-        </div>
-      ) : filteredPrompts.length > 0 ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredPrompts.map((prompt) => (
-            <div key={prompt.id} className="animate-fade-in">
-              <PromptCard
-                id={prompt.id}
-                title={prompt.title}
-                imageUrl={prompt.image_url}
-                creator={prompt.profiles?.display_name || "Unbekannt"}
-                creatorId={prompt.creator_id}
-                createdAt={prompt.created_at}
-                favoritesCount={prompt.favorites_count}
-                commentsCount={prompt.comments_count}
-                tags={prompt.tags}
-                averageRating={prompt.average_rating}
-                onClick={() => handlePromptClick(prompt.id)}
-              />
+      {!showMarketplace ? (
+        /* Hero Section - Landing View */
+        <div className="flex min-h-[70vh] flex-col items-center justify-center text-center">
+          <div className="mb-8 inline-flex items-center gap-3">
+            <div className="rounded-xl bg-gradient-primary p-4 shadow-glow animate-glow">
+              <Sparkles className="h-12 w-12 text-primary-foreground" />
             </div>
-          ))}
+          </div>
+          <h1 className="mb-4 bg-gradient-hero bg-clip-text text-5xl font-bold text-transparent md:text-6xl">
+            {t('hero.title')}
+          </h1>
+          <p className="mb-2 text-xl font-semibold text-foreground md:text-2xl">
+            {t('hero.subtitle')}
+          </p>
+          <p className="mx-auto mb-12 max-w-2xl text-lg text-muted-foreground">
+            {t('hero.description')}
+          </p>
+          
+          {/* Action Buttons */}
+          <div className="flex flex-col gap-4 w-full max-w-md px-4">
+            <Button
+              onClick={() => setShowMarketplace(true)}
+              size="lg"
+              className="bg-gradient-primary shadow-glow w-full h-14 text-base"
+            >
+              <Search className="mr-2 h-5 w-5" />
+              {t('btn.discoverPrompts')}
+            </Button>
+            <Button
+              onClick={() => {
+                if (!session) {
+                  toast({
+                    variant: "destructive",
+                    title: t('toast.loginRequired'),
+                    description: t('toast.loginRequiredDesc'),
+                  });
+                  navigate("/auth");
+                  return;
+                }
+                navigate("/prompt-creator");
+              }}
+              size="lg"
+              variant="outline"
+              className="w-full h-14 text-base"
+            >
+              <Sparkles className="mr-2 h-5 w-5" />
+              {t('btn.generatePrompt')}
+            </Button>
+            <Button
+              onClick={() => {
+                if (!session) {
+                  toast({
+                    variant: "destructive",
+                    title: t('toast.loginRequired'),
+                    description: t('toast.loginRequiredDesc'),
+                  });
+                  navigate("/auth");
+                  return;
+                }
+                navigate("/prompt-extractor");
+              }}
+              size="lg"
+              variant="outline"
+              className="w-full h-14 text-base"
+            >
+              <Upload className="mr-2 h-5 w-5" />
+              {t('btn.extractPrompt')}
+            </Button>
+          </div>
         </div>
       ) : (
-        <div className="py-12 text-center">
-          <p className="text-muted-foreground">
-            {searchQuery ? t('empty.noResults') : t('empty.noPrompts')}
-          </p>
-        </div>
+        <>
+          {/* Marketplace View */}
+          <div className="mb-8 text-center">
+            <h1 className="mb-4 bg-gradient-hero bg-clip-text text-4xl font-bold text-transparent">
+              {t('nav.marketplace')}
+            </h1>
+          </div>
+
+          {/* Search Bar, Filter & Upload Button */}
+          <div className="mb-8 flex flex-col gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder={t('search.placeholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-12 pl-12 pr-4 border-border/40 bg-card/50 backdrop-blur w-full"
+                />
+              </div>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full sm:w-[240px] h-12">
+                  <SelectValue placeholder="Sortieren nach..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="created_at_desc">{t('sort.latest')}</SelectItem>
+                  <SelectItem value="created_at_asc">{t('sort.oldest')}</SelectItem>
+                  <SelectItem value="rating_desc">{t('sort.ratingDesc')}</SelectItem>
+                  <SelectItem value="rating_asc">{t('sort.ratingAsc')}</SelectItem>
+                  <SelectItem value="favorites_desc">{t('sort.favoritesDesc')}</SelectItem>
+                  <SelectItem value="favorites_asc">{t('sort.favoritesAsc')}</SelectItem>
+                  <SelectItem value="comments_desc">{t('sort.commentsDesc')}</SelectItem>
+                  <SelectItem value="comments_asc">{t('sort.commentsAsc')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-2 w-full sm:w-auto sm:flex-row">
+              <Button
+                onClick={() => {
+                  if (!session) {
+                    toast({
+                      variant: "destructive",
+                      title: t('toast.loginRequired'),
+                      description: t('toast.loginRequiredDesc'),
+                    });
+                    navigate("/auth");
+                    return;
+                  }
+                  navigate("/upload");
+                }}
+                className="bg-gradient-primary shadow-glow w-full"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                {t('btn.uploadPrompt')}
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!session) {
+                    toast({
+                      variant: "destructive",
+                      title: t('toast.loginRequired'),
+                      description: t('toast.loginRequiredDesc'),
+                    });
+                    navigate("/auth");
+                    return;
+                  }
+                  navigate("/prompt-extractor");
+                }}
+                variant="outline"
+                className="gap-2 w-full hidden sm:flex"
+              >
+                <Upload className="h-4 w-4" />
+                {t('btn.extractPrompt')}
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!session) {
+                    toast({
+                      variant: "destructive",
+                      title: t('toast.loginRequired'),
+                      description: t('toast.loginRequiredDesc'),
+                    });
+                    navigate("/auth");
+                    return;
+                  }
+                  navigate("/prompt-creator");
+                }}
+                variant="outline"
+                className="gap-2 w-full"
+              >
+                <Sparkles className="h-4 w-4" />
+                {t('btn.generatePrompt')}
+              </Button>
+            </div>
+          </div>
+
+          {/* Prompts Grid */}
+          {loading ? (
+            <div className="py-12 text-center">
+              <p className="text-muted-foreground">{t('loading.prompts')}</p>
+            </div>
+          ) : filteredPrompts.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredPrompts.map((prompt) => (
+                <div key={prompt.id} className="animate-fade-in">
+                  <PromptCard
+                    id={prompt.id}
+                    title={prompt.title}
+                    imageUrl={prompt.image_url}
+                    creator={prompt.profiles?.display_name || "Unbekannt"}
+                    creatorId={prompt.creator_id}
+                    createdAt={prompt.created_at}
+                    favoritesCount={prompt.favorites_count}
+                    commentsCount={prompt.comments_count}
+                    tags={prompt.tags}
+                    averageRating={prompt.average_rating}
+                    onClick={() => handlePromptClick(prompt.id)}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center">
+              <p className="text-muted-foreground">
+                {searchQuery ? t('empty.noResults') : t('empty.noPrompts')}
+              </p>
+            </div>
+          )}
+        </>
       )}
 
       <PromptDetailDialog

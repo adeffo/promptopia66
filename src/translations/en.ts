@@ -8,11 +8,12 @@ export default {
   'nav.settings': 'Settings',
   'nav.logout': 'Logout',
   'nav.login': 'Login',
-  
+
   // Buttons
   'btn.uploadPrompt': 'Upload Prompt',
-  'btn.extractPrompt': 'Extract Prompt',
-  'btn.giveInspiration': 'Give Inspiration',
+  'btn.extractPrompt': 'Extract Prompt from Image',
+  'btn.generatePrompt': 'Generate AI Prompt',
+  'btn.discoverPrompts': 'Discover Prompts',
   'btn.copy': 'Copy',
   'btn.save': 'Save',
   'btn.cancel': 'Cancel',
@@ -22,8 +23,9 @@ export default {
   'btn.showOriginal': 'Show Original',
   
   // Hero Section
-  'hero.title': 'Discover AI Prompts',
-  'hero.description': 'The best community platform for creative AI prompts. Share your creations, discover inspiration, and participate in contests.',
+  'hero.title': 'Welcome to Promptopia',
+  'hero.subtitle': 'The place where ideas become images.',
+  'hero.description': 'Discover unique prompts or let AI put your vision into words.',
   
   // Search & Filter
   'search.placeholder': 'Search for prompts, tags or creators...',

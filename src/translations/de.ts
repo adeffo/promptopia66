@@ -1,6 +1,6 @@
 export default {
   // Navigation
-  'nav.marketplace': 'Marketplace',
+  'nav.marketplace': 'Marktplatz',
   'nav.contests': 'Contests',
   'nav.leaderboard': 'Leaderboard',
   'nav.myPrompts': 'Meine Prompts',
@@ -11,8 +11,9 @@ export default {
   
   // Buttons
   'btn.uploadPrompt': 'Prompt hochladen',
-  'btn.extractPrompt': 'Prompt extrahieren',
-  'btn.giveInspiration': 'Selbst Inspiration geben',
+  'btn.extractPrompt': 'Prompt aus Bild extrahieren',
+  'btn.generatePrompt': 'KI-Prompt erzeugen',
+  'btn.discoverPrompts': 'Prompts entdecken',
   'btn.copy': 'Kopieren',
   'btn.save': 'Speichern',
   'btn.cancel': 'Abbrechen',
@@ -22,8 +23,9 @@ export default {
   'btn.showOriginal': 'Original anzeigen',
   
   // Hero Section
-  'hero.title': 'Entdecke KI-Prompts',
-  'hero.description': 'Die beste Community-Plattform für kreative KI-Prompts. Teile deine Kreationen, entdecke Inspiration und nimm an Contests teil.',
+  'hero.title': 'Willkommen bei Promptopia',
+  'hero.subtitle': 'Der Ort, an dem Ideen zu Bildern werden.',
+  'hero.description': 'Entdecke einzigartige Prompts oder lass die KI deine Vision in Worte fassen.',
   
   // Search & Filter
   'search.placeholder': 'Suche nach Prompts, Tags oder Creators...',

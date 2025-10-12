@@ -100,7 +100,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                     className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 text-left"
                   >
                     <Sparkles className="h-4 w-4" />
-                    {t('btn.giveInspiration')}
+                    {t('btn.generatePrompt')}
                   </button>
                   <button
                     onClick={() => handleProtectedNavigation("/profile", true)}
@@ -205,7 +205,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                       <DropdownMenuItem asChild>
                         <Link to="/prompt-creator" className="cursor-pointer text-primary">
                           <Sparkles className="mr-2 h-4 w-4" />
-                          {t('btn.giveInspiration')}
+                          {t('btn.generatePrompt')}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
