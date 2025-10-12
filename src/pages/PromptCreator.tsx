@@ -45,20 +45,13 @@ const PromptCreator = () => {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setSession(session);
-      }
+      setSession(session);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (!session) {
-        navigate("/auth");
-      }
     });
 
     return () => subscription.unsubscribe();
@@ -151,12 +144,8 @@ Seitenverhältnis: ${promptData.aspectRatio}`;
     aspectRatio: "Seitenverhältnis und Auflösung",
   };
 
-  if (!session) {
-    return null;
-  }
-
   return (
-    <Layout user={session.user} onLogout={handleLogout}>
+    <Layout user={session?.user} onLogout={handleLogout}>
       <div className="container max-w-4xl mx-auto px-4 py-8">
         <Card>
           <CardHeader>

@@ -169,7 +169,7 @@ const Index = () => {
             {t('hero.description')}
           </p>
           <p className="mx-auto mb-12 max-w-2xl text-base font-bold bg-gradient-primary bg-clip-text text-transparent">
-            {t('hero.loginHint')}
+            Melde dich an, um eigene Prompts zu <span className="text-accent">speichern</span> und die besten Ideen anderer zu <span className="text-accent">favorisieren</span>.
           </p>
           
           {/* Action Buttons */}
