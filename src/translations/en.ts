@@ -7,6 +7,7 @@ export default {
   'nav.myPrompts': 'My Prompts',
   'nav.profile': 'Profile',
   'nav.settings': 'Settings',
+  'nav.repairImages': 'Repair Images',
   'nav.logout': 'Logout',
   'nav.login': 'Login',
 

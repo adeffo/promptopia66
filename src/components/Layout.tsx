@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Sparkles, User, LogOut, Settings, Menu, Upload } from "lucide-react";
+import { Sparkles, User, LogOut, Settings, Menu, Upload, ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Footer } from "@/components/Footer";
@@ -110,6 +110,13 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                     <Settings className="h-4 w-4" />
                     {t("nav.settings")}
                   </button>
+                  <button
+                    onClick={() => handleProtectedNavigation("/repair-images", true)}
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center gap-2 text-left"
+                  >
+                    <ImageOff className="h-4 w-4" />
+                    {t("nav.repairImages")}
+                  </button>
                   {user && (
                     <>
                       <div className="my-2 border-t border-border" />
@@ -192,6 +199,12 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                         <Link to="/settings" className="cursor-pointer">
                           <Settings className="mr-2 h-4 w-4" />
                           {t("nav.settings")}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/repair-images" className="cursor-pointer">
+                          <ImageOff className="mr-2 h-4 w-4" />
+                          {t("nav.repairImages")}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
