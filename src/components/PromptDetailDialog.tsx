@@ -340,8 +340,15 @@ export const PromptDetailDialog = ({
           <div className="relative aspect-video w-full overflow-hidden rounded-lg">
             <img
               src={prompt.image_url}
-              alt={prompt.title}
-              className="h-full w-full object-contain"
+              alt={`${prompt.title} – Prompt Referenzbild`}
+              loading="lazy"
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement;
+                if (target.src !== '/placeholder.svg') {
+                  target.src = '/placeholder.svg';
+                }
+              }}
+              className="h-full w-full object-cover"
             />
           </div>
 

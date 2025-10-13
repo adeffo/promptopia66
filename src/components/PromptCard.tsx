@@ -47,8 +47,15 @@ export const PromptCard = ({
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={imageUrl}
-          alt={title}
-          className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+          alt={`${title} – Prompt Referenzbild`}
+          loading="lazy"
+          onError={(e) => {
+            const target = e.currentTarget as HTMLImageElement;
+            if (target.src !== '/placeholder.svg') {
+              target.src = '/placeholder.svg';
+            }
+          }}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
         
