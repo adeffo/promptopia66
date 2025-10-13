@@ -1,0 +1,196 @@
+import { useState } from "react";
+import { Layout } from "@/components/Layout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sparkles, Upload, Download, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+export default function ImageEnhancer() {
+  const { t } = useLanguage();
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [enhancedImage, setEnhancedImage] = useState<string | null>(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useState(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+  });
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Bitte wählen Sie eine Bilddatei aus");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setOriginalImage(event.target?.result as string);
+      setEnhancedImage(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const enhanceImage = async () => {
+    if (!originalImage) {
+      toast.error("Bitte laden Sie zuerst ein Bild hoch");
+      return;
+    }
+
+    setIsEnhancing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("enhance-image", {
+        body: { imageData: originalImage },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.error) {
+        if (data.error.includes("Rate limit")) {
+          toast.error("Zu viele Anfragen. Bitte versuchen Sie es später erneut.");
+        } else if (data.error.includes("Payment required")) {
+          toast.error("Guthaben aufgebraucht. Bitte fügen Sie Credits hinzu.");
+        } else {
+          toast.error("Fehler beim Verbessern des Bildes");
+        }
+        return;
+      }
+
+      setEnhancedImage(data.enhancedImage);
+      toast.success("Bild erfolgreich verbessert!");
+    } catch (error) {
+      console.error("Error enhancing image:", error);
+      toast.error("Fehler beim Verbessern des Bildes");
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
+  const downloadImage = () => {
+    if (!enhancedImage) return;
+
+    const link = document.createElement("a");
+    link.href = enhancedImage;
+    link.download = `enhanced-image-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Bild heruntergeladen!");
+  };
+
+  return (
+    <Layout user={user} onLogout={() => supabase.auth.signOut()}>
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Bild-Verbesserung
+          </h1>
+          <p className="text-muted-foreground">
+            Verbessern Sie Ihre Bilder mit KI-Technologie
+          </p>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Bild hochladen
+            </CardTitle>
+            <CardDescription>
+              Laden Sie ein Bild hoch, um es mit KI zu verbessern
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex justify-center">
+              <label className="cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <Button variant="outline" className="gap-2" asChild>
+                  <span>
+                    <Upload className="h-4 w-4" />
+                    Bild auswählen
+                  </span>
+                </Button>
+              </label>
+            </div>
+
+            {originalImage && (
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Original</h3>
+                  <div className="border rounded-lg overflow-hidden bg-muted">
+                    <img
+                      src={originalImage}
+                      alt="Original"
+                      className="w-full h-auto"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Verbessert</h3>
+                  <div className="border rounded-lg overflow-hidden bg-muted min-h-[200px] flex items-center justify-center">
+                    {enhancedImage ? (
+                      <img
+                        src={enhancedImage}
+                        alt="Enhanced"
+                        className="w-full h-auto"
+                      />
+                    ) : (
+                      <p className="text-muted-foreground text-sm">
+                        Warten auf Verbesserung...
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {originalImage && (
+              <div className="flex justify-center gap-4">
+                <Button
+                  onClick={enhanceImage}
+                  disabled={isEnhancing}
+                  className="bg-gradient-primary shadow-glow gap-2"
+                >
+                  {isEnhancing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Wird verbessert...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Bild verbessern
+                    </>
+                  )}
+                </Button>
+
+                {enhancedImage && (
+                  <Button
+                    onClick={downloadImage}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Herunterladen
+                  </Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </Layout>
+  );
+}

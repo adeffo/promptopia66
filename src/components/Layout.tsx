@@ -117,6 +117,13 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                     <ImageOff className="h-4 w-4" />
                     {t("nav.repairImages")}
                   </button>
+                  <button
+                    onClick={() => handleProtectedNavigation("/image-enhancer", false)}
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 text-left"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Bild verbessern
+                  </button>
                   {user && (
                     <>
                       <div className="my-2 border-t border-border" />
@@ -205,6 +212,12 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                         <Link to="/repair-images" className="cursor-pointer">
                           <ImageOff className="mr-2 h-4 w-4" />
                           {t("nav.repairImages")}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/image-enhancer" className="cursor-pointer text-primary">
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          Bild verbessern
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>

@@ -11,6 +11,7 @@ import UploadPrompt from "./pages/UploadPrompt";
 import PromptCreator from "./pages/PromptCreator";
 import PromptExtractor from "./pages/PromptExtractor";
 import RepairImages from "./pages/RepairImages";
+import ImageEnhancer from "./pages/ImageEnhancer";
 import MyPrompts from "./pages/MyPrompts";
 import Contests from "./pages/Contests";
 import Leaderboard from "./pages/Leaderboard";
@@ -58,6 +59,7 @@ const App = () => (
           <Route path="/prompt-creator" element={<PromptCreator />} />
           <Route path="/prompt-extractor" element={<PromptExtractor />} />
           <Route path="/repair-images" element={<RepairImages />} />
+          <Route path="/image-enhancer" element={<ImageEnhancer />} />
           <Route path="/my-prompts" element={<MyPrompts />} />
           <Route path="/contests" element={<Contests />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
