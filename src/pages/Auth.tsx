@@ -132,46 +132,6 @@ const Auth = () => {
     }
   };
 
-  const handleAppleSignIn = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      toast({
-        title: "Fehler bei der Anmeldung",
-        description: error.message,
-        variant: "destructive",
-      });
-      setLoading(false);
-    }
-  };
-
-  const handleFacebookSignIn = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'facebook',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      toast({
-        title: "Fehler bei der Anmeldung",
-        description: error.message,
-        variant: "destructive",
-      });
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
@@ -260,26 +220,6 @@ const Auth = () => {
                   >
                     {t('auth.googleSignin')}
                   </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleAppleSignIn}
-                    disabled={loading}
-                  >
-                    {t('auth.appleSignin')}
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleFacebookSignIn}
-                    disabled={loading}
-                  >
-                    {t('auth.facebookSignin')}
-                  </Button>
                 </form>
               </TabsContent>
 
@@ -339,26 +279,6 @@ const Auth = () => {
                     disabled={loading}
                   >
                     {t('auth.googleSignup')}
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleAppleSignIn}
-                    disabled={loading}
-                  >
-                    {t('auth.appleSignup')}
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleFacebookSignIn}
-                    disabled={loading}
-                  >
-                    {t('auth.facebookSignup')}
                   </Button>
                 </form>
               </TabsContent>
