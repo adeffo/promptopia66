@@ -21,9 +21,9 @@ serve(async (req) => {
       );
     }
 
-    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
-    if (!OPENROUTER_API_KEY) {
-      console.error('OPENROUTER_API_KEY is not configured');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      console.error('LOVABLE_API_KEY is not configured');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -43,26 +43,36 @@ Antworte NUR mit einem JSON-Objekt in diesem Format:
 
 Beliebte Genres sind: Fantasy, Sci-Fi, Horror, Romantik, Cyberpunk, Steampunk, Post-Apokalyptisch, Mittelalter, Modern, Abstrakt, Natur, Architektur, Portrait, Landschaft, etc.`;
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://lovable.dev',
       },
       body: JSON.stringify({
-        model: 'deepseek/deepseek-r1',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `Titel: ${title}\n\nPrompt: ${promptText}` }
         ],
-        temperature: 0.7,
       }),
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'Payment required. Please add credits to your workspace.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       const errorText = await response.text();
-      console.error('OpenRouter API error:', response.status, errorText);
+      console.error('Lovable AI error:', response.status, errorText);
       return new Response(
         JSON.stringify({ error: 'Failed to generate autocomplete suggestions' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
