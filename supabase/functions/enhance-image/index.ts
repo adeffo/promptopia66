@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageData } = await req.json();
+    const { imageData, mode = "quality" } = await req.json();
     
     if (!imageData) {
       return new Response(
@@ -20,12 +20,20 @@ serve(async (req) => {
       );
     }
 
+    // Define enhancement prompt based on mode
+    const enhancementPrompts = {
+      quality: "Enhance this image by dramatically improving its quality and resolution. Transform this grainy, pixelated photo into a high-resolution, crystal-clear image. Sharpen details, reduce noise, improve color accuracy, and enhance overall clarity. Make it look professional and high-quality.",
+      background: "Enhance the background and environmental details of this image. Bring out the natural beauty of landscapes, objects, and fine details in the background. Improve texture clarity, enhance depth, sharpen background elements, and make environmental details more vivid while maintaining the main subject. Focus on making backgrounds and surroundings more detailed and visually appealing."
+    };
+
+    const enhancementPrompt = enhancementPrompts[mode as keyof typeof enhancementPrompts] || enhancementPrompts.quality;
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Enhancing image with Lovable AI...");
+    console.log(`Enhancing image with Lovable AI using ${mode} mode...`);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -41,7 +49,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Enhance this image by improving its quality, sharpness, clarity, and colors. Make it look professional and high-quality while preserving the original composition and subjects. Reduce noise, enhance details, and optimize contrast and saturation for the best visual result."
+                text: enhancementPrompt
               },
               {
                 type: "image_url",

@@ -2,16 +2,21 @@ import { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Sparkles, Upload, Download, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+
+type EnhancementMode = "quality" | "background";
 
 export default function ImageEnhancer() {
   const { t } = useLanguage();
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [enhancedImage, setEnhancedImage] = useState<string | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhancementMode, setEnhancementMode] = useState<EnhancementMode>("quality");
   const [user, setUser] = useState<any>(null);
 
   useState(() => {
@@ -44,7 +49,10 @@ export default function ImageEnhancer() {
     setIsEnhancing(true);
     try {
       const { data, error } = await supabase.functions.invoke("enhance-image", {
-        body: { imageData: originalImage },
+        body: { 
+          imageData: originalImage,
+          mode: enhancementMode
+        },
       });
 
       if (error) {
@@ -107,6 +115,33 @@ export default function ImageEnhancer() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium">Enhancement-Modus wählen</h3>
+              <RadioGroup value={enhancementMode} onValueChange={(value) => setEnhancementMode(value as EnhancementMode)}>
+                <div className="flex items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <RadioGroupItem value="quality" id="quality" />
+                  <div className="space-y-1 leading-none">
+                    <Label htmlFor="quality" className="font-medium cursor-pointer">
+                      Low-quality Enhancer
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Von niedriger Qualität zu hoher Auflösung in einem Klick! Transformieren Sie Ihre körnigen, pixeligen Fotos mit fortschrittlicher KI-Technologie.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <RadioGroupItem value="background" id="background" />
+                  <div className="space-y-1 leading-none">
+                    <Label htmlFor="background" className="font-medium cursor-pointer">
+                      Background Enhancer
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Verbessern Sie selbst die kleinsten Details in Ihren Fotos. Heben Sie die natürliche Schönheit von Landschaften, Objekten und Details hervor.
+                    </p>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
             <div className="flex justify-center">
               <label className="cursor-pointer">
                 <input
