@@ -194,15 +194,6 @@ const Index = () => {
               <Sparkles className="mr-2 h-5 w-5" />
               {t('btn.generatePrompt')}
             </Button>
-            <Button
-              onClick={() => navigate("/prompt-extractor")}
-              size="lg"
-              variant="outline"
-              className="w-full h-14 text-base"
-            >
-              <Upload className="mr-2 h-5 w-5" />
-              {t('btn.extractPrompt')}
-            </Button>
           </div>
         </div>
       ) : (
@@ -261,25 +252,6 @@ const Index = () => {
               >
                 <Plus className="mr-2 h-4 w-4" />
                 {t('btn.uploadPrompt')}
-              </Button>
-              <Button
-                onClick={() => {
-                  if (!session) {
-                    toast({
-                      variant: "destructive",
-                      title: t('toast.loginRequired'),
-                      description: t('toast.loginRequiredDesc'),
-                    });
-                    navigate("/auth");
-                    return;
-                  }
-                  navigate("/prompt-extractor");
-                }}
-                variant="outline"
-                className="gap-2 w-full hidden sm:flex"
-              >
-                <Upload className="h-4 w-4" />
-                {t('btn.extractPrompt')}
               </Button>
               <Button
                 onClick={() => {

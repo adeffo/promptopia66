@@ -83,13 +83,6 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                   ))}
                   <div className="my-2 border-t border-border" />
                   <button
-                    onClick={() => handleProtectedNavigation("/prompt-extractor", true)}
-                    className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 text-left"
-                  >
-                    <Upload className="h-4 w-4" />
-                    {t("btn.extractPrompt")}
-                  </button>
-                  <button
                     onClick={() => handleProtectedNavigation("/prompt-creator", false)}
                     className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 text-left"
                   >

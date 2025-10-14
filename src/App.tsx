@@ -9,7 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import UploadPrompt from "./pages/UploadPrompt";
 import PromptCreator from "./pages/PromptCreator";
-import PromptExtractor from "./pages/PromptExtractor";
+
 import RepairImages from "./pages/RepairImages";
 import ImageEnhancer from "./pages/ImageEnhancer";
 import MyPrompts from "./pages/MyPrompts";
@@ -57,7 +57,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/upload" element={<UploadPrompt />} />
           <Route path="/prompt-creator" element={<PromptCreator />} />
-          <Route path="/prompt-extractor" element={<PromptExtractor />} />
+          
           <Route path="/repair-images" element={<RepairImages />} />
           <Route path="/image-enhancer" element={<ImageEnhancer />} />
           <Route path="/my-prompts" element={<MyPrompts />} />
