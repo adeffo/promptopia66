@@ -34,20 +34,20 @@ serve(async (req) => {
     const detailInstruction =
       detailLevel < 33
         ? language === "de"
-          ? "Beschreibe das Bild in einem kurzen, präzisen Prompt."
-          : "Describe the image in a short, precise prompt."
+          ? "Analysiere das Bild präzise und erstelle einen kompakten Prompt mit den wichtigsten visuellen Elementen, Kamerawinkel und Lichtverhältnissen."
+          : "Analyze the image precisely and create a compact prompt with the most important visual elements, camera angle, and lighting conditions."
         : detailLevel < 67
         ? language === "de"
-          ? "Beschreibe das Bild als strukturierten Prompt mit Fokus auf Szene, Stil, Beleuchtung und Stimmung."
-          : "Describe the image as a structured prompt focusing on scene, style, lighting, and mood."
+          ? "Analysiere das Bild technisch genau und beschreibe: Kameraposition (Winkel, Höhe, Perspektive), Brennweite und Schärfentiefe, Lichtverhältnisse (Richtung, Qualität, Farbtemperatur), Belichtung (Helligkeit, Kontrast, Schatten/Highlights), Komposition und Bildaufbau, Farbgebung und Farbstimmung. Erstelle daraus einen strukturierten Bildgenerierungs-Prompt."
+          : "Analyze the image technically and describe: Camera position (angle, height, perspective), focal length and depth of field, lighting conditions (direction, quality, color temperature), exposure (brightness, contrast, shadows/highlights), composition and framing, color palette and color grading. Create a structured image generation prompt from this."
         : language === "de"
-        ? "Beschreibe das Bild als detaillierten, hochqualitativen Bildgenerierungs-Prompt. Inkludiere Details wie Szene, Stil, Beleuchtung, Komposition, Kamera, Farben, Stimmung und wichtige Merkmale."
-        : "Describe this image as a detailed, high-quality image generation prompt. Include details such as scene, style, lighting, composition, camera, colors, mood, and key features.";
+        ? "Analysiere das Bild wie ein professioneller Fotograf und beschreibe alle technischen Details: KAMERA: Genaue Position, Winkel, Höhe, Perspektive (z.B. 'eye-level', 'low-angle', 'bird's eye'), geschätzte Brennweite (z.B. 'wide-angle 24mm', 'portrait 85mm'), Schärfentiefe und Bokeh-Effekt. BELICHTUNG: Belichtungsstil (z.B. 'high-key', 'low-key', 'balanced'), Kontrast (soft/hard), Dynamikumfang, Schatten- und Highlight-Details. LICHT: Lichtquelle und -richtung (z.B. 'natural sunlight from right', 'soft diffused overhead lighting'), Lichtqualität (hard/soft), Farbtemperatur (warm/cool/neutral), Schatten-Charakteristik. KOMPOSITION: Bildaufbau, Symmetrie, Führungslinien, Goldener Schnitt, Vorder-/Mittel-/Hintergrund. FARBEN: Farbpalette, Farbstimmung, Sättigung, Farbtemperatur, Color Grading Stil. STIL: Fotografischer Stil, visuelle Ästhetik, Atmosphäre. Erstelle daraus einen detaillierten, technischen Bildgenerierungs-Prompt, der das Bild möglichst exakt reproduzieren würde."
+        : "Analyze the image like a professional photographer and describe all technical details: CAMERA: Exact position, angle, height, perspective (e.g., 'eye-level', 'low-angle', 'bird's eye'), estimated focal length (e.g., 'wide-angle 24mm', 'portrait 85mm'), depth of field and bokeh effect. EXPOSURE: Exposure style (e.g., 'high-key', 'low-key', 'balanced'), contrast (soft/hard), dynamic range, shadow and highlight details. LIGHTING: Light source and direction (e.g., 'natural sunlight from right', 'soft diffused overhead lighting'), light quality (hard/soft), color temperature (warm/cool/neutral), shadow characteristics. COMPOSITION: Framing, symmetry, leading lines, rule of thirds, foreground/midground/background. COLORS: Color palette, color mood, saturation, color temperature, color grading style. STYLE: Photographic style, visual aesthetic, atmosphere. Create a detailed, technical image generation prompt that would reproduce this image as accurately as possible.";
 
     const fullInstruction =
       language === "de"
-        ? `${detailInstruction} Halte es kurz und klar. Gebe nur den Prompt zurück, ohne zusätzliche Erklärungen.`
-        : `${detailInstruction} Keep it short and clear. Return only the prompt without additional explanations.`;
+        ? `${detailInstruction} Gebe nur den technischen Bildgenerierungs-Prompt zurück, ohne zusätzliche Erklärungen oder Kommentare.`
+        : `${detailInstruction} Return only the technical image generation prompt without additional explanations or comments.`;
 
     console.log("Calling OpenRouter API with image...");
 
