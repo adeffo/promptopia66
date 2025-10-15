@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Search, Sparkles, Plus, Upload } from "lucide-react";
+import { Search, Sparkles, Plus, Upload, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -17,6 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface Prompt {
   id: string;
@@ -43,9 +51,13 @@ const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showMarketplace, setShowMarketplace] = useState(searchParams.get('view') === 'gallery');
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
   const { t } = useLanguage();
   const navigate = useNavigate();
+
+  const PROMPTS_PER_PAGE = 10;
+  const GUEST_LIMIT = 5;
 
   // Reset to landing page when navigating back to home without query params
   useEffect(() => {
@@ -143,6 +155,14 @@ const Index = () => {
           return 0;
       }
     });
+
+  // Pagination logic
+  const isGuest = !session;
+  const displayLimit = isGuest ? GUEST_LIMIT : filteredPrompts.length;
+  const totalPages = isGuest ? 1 : Math.ceil(filteredPrompts.length / PROMPTS_PER_PAGE);
+  const startIndex = isGuest ? 0 : (currentPage - 1) * PROMPTS_PER_PAGE;
+  const endIndex = isGuest ? GUEST_LIMIT : startIndex + PROMPTS_PER_PAGE;
+  const displayedPrompts = filteredPrompts.slice(startIndex, endIndex);
 
   const handlePromptClick = (promptId: string) => {
     setSelectedPromptId(promptId);
@@ -281,25 +301,89 @@ const Index = () => {
               <p className="text-muted-foreground">{t('loading.prompts')}</p>
             </div>
           ) : filteredPrompts.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredPrompts.map((prompt) => (
-                <div key={prompt.id} className="animate-fade-in">
-                  <PromptCard
-                    id={prompt.id}
-                    title={prompt.title}
-                    imageUrl={prompt.image_url}
-                    creator={prompt.profiles?.display_name || "Unbekannt"}
-                    creatorId={prompt.creator_id}
-                    createdAt={prompt.created_at}
-                    favoritesCount={prompt.favorites_count}
-                    commentsCount={prompt.comments_count}
-                    tags={prompt.tags}
-                    averageRating={prompt.average_rating}
-                    onClick={() => handlePromptClick(prompt.id)}
-                  />
+            <>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {displayedPrompts.map((prompt) => (
+                  <div key={prompt.id} className="animate-fade-in">
+                    <PromptCard
+                      id={prompt.id}
+                      title={prompt.title}
+                      imageUrl={prompt.image_url}
+                      creator={prompt.profiles?.display_name || "Unbekannt"}
+                      creatorId={prompt.creator_id}
+                      createdAt={prompt.created_at}
+                      favoritesCount={prompt.favorites_count}
+                      commentsCount={prompt.comments_count}
+                      tags={prompt.tags}
+                      averageRating={prompt.average_rating}
+                      onClick={() => handlePromptClick(prompt.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Guest Login Prompt */}
+              {isGuest && filteredPrompts.length > GUEST_LIMIT && (
+                <div className="mt-8 text-center py-8 border-t border-border/40">
+                  <p className="text-lg font-semibold text-muted-foreground mb-4">
+                    Mehr Prompts nach dem Login
+                  </p>
+                  <Button
+                    onClick={() => navigate("/auth")}
+                    className="bg-gradient-primary shadow-glow"
+                  >
+                    Jetzt anmelden
+                  </Button>
                 </div>
-              ))}
-            </div>
+              )}
+
+              {/* Pagination for logged-in users */}
+              {!isGuest && totalPages > 1 && (
+                <div className="mt-8 flex justify-center">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          disabled={currentPage === 1}
+                          className="gap-1"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          Zurück
+                        </Button>
+                      </PaginationItem>
+                      
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(page)}
+                            isActive={currentPage === page}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+
+                      <PaginationItem>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          disabled={currentPage === totalPages}
+                          className="gap-1"
+                        >
+                          Weiter
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </>
           ) : (
             <div className="py-12 text-center">
               <p className="text-muted-foreground">

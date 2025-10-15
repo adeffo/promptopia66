@@ -1,27 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Upload, Download, Loader2 } from "lucide-react";
+import { Sparkles, Upload, Download, Loader2, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 type EnhancementMode = "quality" | "background";
 
 export default function ImageEnhancer() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [enhancedImage, setEnhancedImage] = useState<string | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [enhancementMode, setEnhancementMode] = useState<EnhancementMode>("quality");
   const [user, setUser] = useState<any>(null);
 
-  useState(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
-  });
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      if (!user) {
+        toast.error("Bitte melden Sie sich an, um die Bild-Verbesserung zu nutzen");
+        navigate("/auth");
+      }
+    });
+  }, [navigate]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -41,6 +49,12 @@ export default function ImageEnhancer() {
   };
 
   const enhanceImage = async () => {
+    if (!user) {
+      toast.error("Bitte melden Sie sich an, um die Bild-Verbesserung zu nutzen");
+      navigate("/auth");
+      return;
+    }
+
     if (!originalImage) {
       toast.error("Bitte laden Sie zuerst ein Bild hoch");
       return;
