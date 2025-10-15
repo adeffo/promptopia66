@@ -22,7 +22,7 @@ serve(async (req) => {
 
     // Define enhancement prompt based on mode
     const enhancementPrompts = {
-      quality: "Enhance this image by dramatically improving its quality and resolution. Transform this grainy, pixelated photo into a high-resolution, crystal-clear image. Sharpen details, reduce noise, improve color accuracy, and enhance overall clarity. Make it look professional and high-quality.",
+      quality: "Apply MAXIMUM quality enhancement to this image at the HIGHEST possible resolution. Transform this into an ultra-high-definition, professional-grade photograph with exceptional clarity. AGGRESSIVELY reduce all noise and grain while MAXIMALLY sharpening every detail. Enhance facial features, skin texture, and fine details to photorealistic perfection. Dramatically improve sharpness, contrast, and color accuracy to achieve studio-quality results. Make this image look like it was captured with professional camera equipment at maximum resolution. Preserve natural appearance while pushing quality to absolute maximum - similar to professional photo restoration software like Remini. Output should be crystal-clear, ultra-sharp, and of the highest possible quality.",
       background: "Enhance the background and environmental details of this image. Bring out the natural beauty of landscapes, objects, and fine details in the background. Improve texture clarity, enhance depth, sharpen background elements, and make environmental details more vivid while maintaining the main subject. Focus on making backgrounds and surroundings more detailed and visually appealing."
     };
 
