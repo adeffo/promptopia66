@@ -21,9 +21,9 @@ serve(async (req) => {
       );
     }
 
-    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
-    if (!OPENROUTER_API_KEY) {
-      console.error("OPENROUTER_API_KEY not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) {
+      console.error("GEMINI_API_KEY not configured");
       return new Response(
         JSON.stringify({ error: "API-Schlüssel nicht konfiguriert" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -51,32 +51,31 @@ serve(async (req) => {
 
     console.log("Calling Lovable AI with image...");
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.0-flash-thinking-exp:free",
-        messages: [
+        contents: [
           {
-            role: "user",
-            content: [
+            parts: [
               {
-                type: "image_url",
-                image_url: {
-                  url: image,
-                },
+                inlineData: {
+                  mimeType: image.startsWith('data:image/png') ? 'image/png' : 
+                            image.startsWith('data:image/jpeg') ? 'image/jpeg' : 'image/webp',
+                  data: image.split(',')[1]
+                }
               },
               {
-                type: "text",
-                text: fullInstruction,
-              },
-            ],
-          },
+                text: fullInstruction
+              }
+            ]
+          }
         ],
-        max_tokens: 500,
+        generationConfig: {
+          maxOutputTokens: 500,
+        }
       }),
     });
 
@@ -102,7 +101,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const prompt = data.choices?.[0]?.message?.content;
+    const prompt = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!prompt) {
       console.error("No prompt in response:", data);

@@ -21,9 +21,9 @@ serve(async (req) => {
       );
     }
 
-    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
-    if (!OPENROUTER_API_KEY) {
-      console.error('OPENROUTER_API_KEY not found');
+    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+    if (!GEMINI_API_KEY) {
+      console.error('GEMINI_API_KEY not found');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -35,20 +35,21 @@ serve(async (req) => {
 
     console.log('Translating to:', targetLang);
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-exp:free',
-        messages: [
+        contents: [
           {
-            role: 'user',
-            content: `${instruction}\n\n${text}`
+            parts: [
+              {
+                text: `${instruction}\n\n${text}`
+              }
+            ]
           }
-        ],
+        ]
       }),
     });
 
@@ -74,7 +75,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const translatedText = data.choices?.[0]?.message?.content;
+    const translatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!translatedText) {
       console.error('No translation in response:', data);

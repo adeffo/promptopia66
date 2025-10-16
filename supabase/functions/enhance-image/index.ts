@@ -28,38 +28,41 @@ serve(async (req) => {
 
     const enhancementPrompt = enhancementPrompts[mode as keyof typeof enhancementPrompts] || enhancementPrompts.quality;
 
-    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
-    if (!OPENROUTER_API_KEY) {
-      throw new Error("OPENROUTER_API_KEY is not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY is not configured");
     }
 
     console.log(`Enhancing image with Lovable AI using ${mode} mode...`);
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.0-flash-thinking-exp:free",
-        messages: [
+        contents: [
           {
-            role: "user",
-            content: [
+            parts: [
               {
-                type: "text",
                 text: enhancementPrompt
               },
               {
-                type: "image_url",
-                image_url: {
-                  url: imageData
+                inlineData: {
+                  mimeType: imageData.startsWith('data:image/png') ? 'image/png' : 
+                            imageData.startsWith('data:image/jpeg') ? 'image/jpeg' : 'image/webp',
+                  data: imageData.split(',')[1]
                 }
               }
             ]
           }
-        ]
+        ],
+        generationConfig: {
+          temperature: 0.4,
+          topK: 32,
+          topP: 1,
+          maxOutputTokens: 4096,
+        }
       })
     });
 
@@ -86,7 +89,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const enhancedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const enhancedImageUrl = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
 
     if (!enhancedImageUrl) {
       throw new Error("No enhanced image received from AI");
@@ -95,7 +98,7 @@ serve(async (req) => {
     console.log("Image enhanced successfully");
 
     return new Response(
-      JSON.stringify({ enhancedImage: enhancedImageUrl }),
+      JSON.stringify({ enhancedImage: `data:image/png;base64,${enhancedImageUrl}` }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
