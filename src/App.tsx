@@ -56,7 +56,7 @@ const App = () => (
       <BrowserRouter>
         <AuthSync />
         <Routes>
-          <Route path="/" element={<PromptGallery />} />
+          <Route path="/" element={<Index />} />
           <Route path="/prompt-gallery" element={<PromptGallery />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/upload" element={<UploadPrompt />} />
