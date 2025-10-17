@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, MessageCircle, User } from "lucide-react";
+import { Heart, MessageCircle, User, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
@@ -13,13 +13,14 @@ interface PromptCardProps {
   imageUrl: string;
   creator: string;
   createdAt: string;
+  likesCount: number;
   favoritesCount: number;
   commentsCount: number;
   tags?: string[];
+  isLiked?: boolean;
   isFavorited?: boolean;
   onClick?: () => void;
   creatorId?: string;
-  averageRating?: number;
 }
 
 export const PromptCard = ({
@@ -27,13 +28,14 @@ export const PromptCard = ({
   imageUrl,
   creator,
   createdAt,
+  likesCount,
   favoritesCount,
   commentsCount,
   tags,
+  isLiked,
   isFavorited,
   onClick,
   creatorId,
-  averageRating = 0,
 }: PromptCardProps) => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   
@@ -108,7 +110,15 @@ export const PromptCard = ({
             <div className="flex items-center gap-1.5 text-sm">
               <Heart
                 className={`h-4 w-4 transition-colors ${
-                  isFavorited ? "fill-accent text-accent" : "text-muted-foreground"
+                  isLiked ? "fill-red-500 text-red-500" : "text-muted-foreground"
+                }`}
+              />
+              <span className="font-medium">{likesCount}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm">
+              <Star
+                className={`h-4 w-4 transition-colors ${
+                  isFavorited ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
                 }`}
               />
               <span className="font-medium">{favoritesCount}</span>
@@ -118,7 +128,6 @@ export const PromptCard = ({
               <span className="font-medium">{commentsCount}</span>
             </div>
           </div>
-          <StarRating rating={averageRating} size={14} />
         </div>
       </div>
     </Card>

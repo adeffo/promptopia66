@@ -5,8 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import Index from "./pages/Index";
+import PromptGallery from "./pages/PromptGallery";
 import Auth from "./pages/Auth";
+import Index from "./pages/Index";
 import UploadPrompt from "./pages/UploadPrompt";
 import PromptCreator from "./pages/PromptCreator";
 
@@ -27,13 +28,13 @@ const AuthSync = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session && location.pathname === "/auth") {
-        navigate("/");
+        navigate("/prompt-gallery");
       }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session && location.pathname === "/auth") {
-        navigate("/");
+        navigate("/prompt-gallery");
       }
     });
 
@@ -54,6 +55,7 @@ const App = () => (
         <AuthSync />
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/prompt-gallery" element={<PromptGallery />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/upload" element={<UploadPrompt />} />
           <Route path="/prompt-creator" element={<PromptCreator />} />

@@ -12,14 +12,13 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, MessageCircle, User, Copy, Check, Edit2, X, Upload } from "lucide-react";
+import { Heart, Star, MessageCircle, User, Copy, Check, Edit2, X, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { commentSchema, promptSchema } from "@/lib/validations";
 import { z } from "zod";
-import { StarRating } from "./StarRating";
 import { UserProfileDialog } from "./UserProfileDialog";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Languages } from "lucide-react";
@@ -51,8 +50,8 @@ export const PromptDetailDialog = ({
   const [prompt, setPrompt] = useState<any>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
+  const [isLiked, setIsLiked] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
-  const [userRating, setUserRating] = useState(0);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [userProfileDialogOpen, setUserProfileDialogOpen] = useState(false);
@@ -70,8 +69,8 @@ export const PromptDetailDialog = ({
       fetchPromptDetails();
       fetchComments();
       if (userId) {
+        checkIfLiked();
         checkIfFavorited();
-        checkUserRating();
       }
     }
   }, [promptId, open, userId]);
@@ -124,6 +123,24 @@ export const PromptDetailDialog = ({
     }
   };
 
+  const checkIfLiked = async () => {
+    if (!promptId || !userId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("likes")
+        .select("id")
+        .eq("prompt_id", promptId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      setIsLiked(!!data);
+    } catch (error: any) {
+      console.error("Error checking like:", error);
+    }
+  };
+
   const checkIfFavorited = async () => {
     if (!promptId || !userId) return;
 
@@ -142,70 +159,45 @@ export const PromptDetailDialog = ({
     }
   };
 
-  const checkUserRating = async () => {
-    if (!promptId || !userId) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("ratings")
-        .select("rating")
-        .eq("prompt_id", promptId)
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (error) throw error;
-      setUserRating(data?.rating || 0);
-    } catch (error: any) {
-      console.error("Error checking rating:", error);
-    }
-  };
-
-  const handleRating = async (rating: number) => {
+  const toggleLike = async () => {
     if (!userId) {
       toast({
         variant: "destructive",
         title: "Anmeldung erforderlich",
-        description: "Bitte melde dich an, um Prompts zu bewerten.",
+        description: "Bitte melde dich an, um Prompts zu liken.",
       });
       return;
     }
 
-    // Check if user is trying to rate their own prompt
-    if (prompt && prompt.creator_id === userId) {
-      toast({
-        variant: "destructive",
-        title: "Nicht erlaubt",
-        description: "Du kannst deinen eigenen Prompt nicht bewerten.",
-      });
-      return;
-    }
-
+    setLoading(true);
     try {
-      const { error } = await supabase
-        .from("ratings")
-        .upsert({
-          prompt_id: promptId,
-          user_id: userId,
-          rating: rating,
-        }, {
-          onConflict: 'user_id,prompt_id'
-        });
+      if (isLiked) {
+        const { error } = await supabase
+          .from("likes")
+          .delete()
+          .eq("prompt_id", promptId)
+          .eq("user_id", userId);
 
-      if (error) throw error;
+        if (error) throw error;
+        setIsLiked(false);
+      } else {
+        const { error } = await supabase
+          .from("likes")
+          .insert({ prompt_id: promptId, user_id: userId });
 
-      setUserRating(rating);
+        if (error) throw error;
+        setIsLiked(true);
+      }
+      
       await fetchPromptDetails();
-
-      toast({
-        title: "Bewertung gespeichert",
-        description: "Deine Bewertung wurde erfolgreich gespeichert.",
-      });
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Fehler",
         description: error.message,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -580,12 +572,25 @@ export const PromptDetailDialog = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={toggleFavorite}
+                onClick={toggleLike}
                 disabled={loading}
               >
                 <Heart
                   className={`mr-2 h-4 w-4 ${
-                    isFavorited ? "fill-accent text-accent" : ""
+                    isLiked ? "fill-red-500 text-red-500" : ""
+                  }`}
+                />
+                {prompt.likes_count}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleFavorite}
+                disabled={loading}
+              >
+                <Star
+                  className={`mr-2 h-4 w-4 ${
+                    isFavorited ? "fill-yellow-400 text-yellow-400" : ""
                   }`}
                 />
                 {prompt.favorites_count}
@@ -595,30 +600,6 @@ export const PromptDetailDialog = ({
                   {prompt.comments_count}
                 </div>
               </div>
-            </div>
-
-            {/* Rating Section */}
-            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/30 p-4">
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Durchschnittsbewertung</p>
-              <div className="flex items-center gap-2">
-                <StarRating rating={prompt.average_rating || 0} size={18} />
-                <span className="text-sm text-muted-foreground">
-                  ({prompt.ratings_count || 0} {prompt.ratings_count === 1 ? "Bewertung" : "Bewertungen"})
-                </span>
-              </div>
-            </div>
-            {userId && prompt.creator_id !== userId && (
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Deine Bewertung</p>
-                <StarRating
-                  rating={userRating}
-                  size={18}
-                  interactive={true}
-                  onRatingChange={handleRating}
-                />
-              </div>
-              )}
             </div>
 
             {/* Tags */}
