@@ -85,6 +85,35 @@ export type Database = {
           },
         ]
       }
+      likes: {
+        Row: {
+          created_at: string
+          id: string
+          prompt_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          prompt_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          prompt_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "likes_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           comments_on_own_prompts: boolean
@@ -195,6 +224,7 @@ export type Database = {
           id: string
           image_url: string
           language: string | null
+          likes_count: number
           model_used: string | null
           prompt_text: string
           ratings_count: number | null
@@ -214,6 +244,7 @@ export type Database = {
           id?: string
           image_url: string
           language?: string | null
+          likes_count?: number
           model_used?: string | null
           prompt_text: string
           ratings_count?: number | null
@@ -233,6 +264,7 @@ export type Database = {
           id?: string
           image_url?: string
           language?: string | null
+          likes_count?: number
           model_used?: string | null
           prompt_text?: string
           ratings_count?: number | null

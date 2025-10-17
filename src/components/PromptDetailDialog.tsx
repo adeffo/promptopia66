@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, Star, MessageCircle, User, Copy, Check, Edit2, X, Upload } from "lucide-react";
+import { Heart, Star, MessageCircle, Copy, Check, Edit2, X, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -50,6 +50,7 @@ export const PromptDetailDialog = ({
   const [prompt, setPrompt] = useState<any>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
+  const [isLiked, setIsLiked] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -68,6 +69,7 @@ export const PromptDetailDialog = ({
       fetchPromptDetails();
       fetchComments();
       if (userId) {
+        checkIfLiked();
         checkIfFavorited();
       }
     }
@@ -121,6 +123,24 @@ export const PromptDetailDialog = ({
     }
   };
 
+  const checkIfLiked = async () => {
+    if (!promptId || !userId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("likes")
+        .select("id")
+        .eq("prompt_id", promptId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      setIsLiked(!!data);
+    } catch (error: any) {
+      console.error("Error checking like:", error);
+    }
+  };
+
   const checkIfFavorited = async () => {
     if (!promptId || !userId) return;
 
@@ -136,6 +156,48 @@ export const PromptDetailDialog = ({
       setIsFavorited(!!data);
     } catch (error: any) {
       console.error("Error checking favorite:", error);
+    }
+  };
+
+  const toggleLike = async () => {
+    if (!userId) {
+      toast({
+        variant: "destructive",
+        title: "Anmeldung erforderlich",
+        description: "Bitte melde dich an, um Prompts zu liken.",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (isLiked) {
+        const { error } = await supabase
+          .from("likes")
+          .delete()
+          .eq("prompt_id", promptId)
+          .eq("user_id", userId);
+
+        if (error) throw error;
+        setIsLiked(false);
+      } else {
+        const { error } = await supabase
+          .from("likes")
+          .insert({ prompt_id: promptId, user_id: userId });
+
+        if (error) throw error;
+        setIsLiked(true);
+      }
+      
+      await fetchPromptDetails();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: error.message,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -507,6 +569,19 @@ export const PromptDetailDialog = ({
             </button>
 
             <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleLike}
+                disabled={loading}
+              >
+                <Heart
+                  className={`mr-2 h-4 w-4 ${
+                    isLiked ? "fill-red-500 text-red-500" : ""
+                  }`}
+                />
+                {prompt.likes_count}
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"

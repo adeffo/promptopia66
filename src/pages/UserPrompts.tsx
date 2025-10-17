@@ -15,6 +15,7 @@ interface Prompt {
   image_url: string;
   creator_id: string;
   created_at: string;
+  likes_count: number;
   favorites_count: number;
   comments_count: number;
   tags: string[];
@@ -146,6 +147,7 @@ const UserPrompts = () => {
                 creator={prompt.profiles?.display_name || "Unbekannt"}
                 creatorId={prompt.creator_id}
                 createdAt={prompt.created_at}
+                likesCount={prompt.likes_count}
                 favoritesCount={prompt.favorites_count}
                 commentsCount={prompt.comments_count}
                 tags={prompt.tags}
