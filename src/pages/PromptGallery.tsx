@@ -41,6 +41,10 @@ interface Prompt {
   } | null;
 }
 
+interface UserFavorites {
+  [promptId: string]: boolean;
+}
+
 const Index = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -52,6 +56,7 @@ const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showMarketplace, setShowMarketplace] = useState(searchParams.get('view') === 'gallery');
   const [currentPage, setCurrentPage] = useState(1);
+  const [userFavorites, setUserFavorites] = useState<UserFavorites>({});
   const { toast } = useToast();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -85,6 +90,33 @@ const Index = () => {
   useEffect(() => {
     fetchPrompts();
   }, []);
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchUserFavorites();
+    }
+  }, [session?.user?.id, prompts]);
+
+  const fetchUserFavorites = async () => {
+    if (!session?.user?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('prompt_id')
+        .eq('user_id', session.user.id);
+
+      if (error) throw error;
+
+      const favoritesMap: UserFavorites = {};
+      data?.forEach(fav => {
+        favoritesMap[fav.prompt_id] = true;
+      });
+      setUserFavorites(favoritesMap);
+    } catch (error: any) {
+      console.error('Error fetching favorites:', error);
+    }
+  };
 
   const fetchPrompts = async () => {
     try {
@@ -316,6 +348,7 @@ const Index = () => {
                       favoritesCount={prompt.favorites_count}
                       commentsCount={prompt.comments_count}
                       tags={prompt.tags}
+                      isFavorited={userFavorites[prompt.id]}
                       onClick={() => handlePromptClick(prompt.id)}
                     />
                   </div>
