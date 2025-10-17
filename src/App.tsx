@@ -26,7 +26,9 @@ const AuthSync = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session && location.pathname === "/auth") {
         navigate("/prompt-gallery");
       }
@@ -54,12 +56,12 @@ const App = () => (
       <BrowserRouter>
         <AuthSync />
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<PromptGallery />} />
           <Route path="/prompt-gallery" element={<PromptGallery />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/upload" element={<UploadPrompt />} />
           <Route path="/prompt-creator" element={<PromptCreator />} />
-          
+
           <Route path="/repair-images" element={<RepairImages />} />
           <Route path="/image-enhancer" element={<ImageEnhancer />} />
           <Route path="/my-prompts" element={<MyPrompts />} />
