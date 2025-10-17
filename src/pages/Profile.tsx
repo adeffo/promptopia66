@@ -56,24 +56,8 @@ const Profile = () => {
         return;
       }
       
-      // If no profile exists, create one
-      if (!data) {
-        const email = session?.user?.email;
-        const defaultName = email?.split('@')[0] || 'Benutzer';
-        
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .insert({ 
-            id: userId,
-            display_name: defaultName 
-          });
-        
-        if (insertError) {
-          console.error("Error creating profile:", insertError);
-        } else {
-          setDisplayName(defaultName);
-        }
-      } else {
+      // If profile exists, populate the fields
+      if (data) {
         if (data?.display_name) setDisplayName(data.display_name);
         if (data?.instagram_url) setInstagramUrl(data.instagram_url);
         if (data?.facebook_url) setFacebookUrl(data.facebook_url);
@@ -158,7 +142,7 @@ const Profile = () => {
       title: "Abgemeldet",
       description: "Du wurdest erfolgreich abgemeldet.",
     });
-    navigate("/");
+    navigate("/prompt-gallery");
   };
 
   return (
@@ -190,7 +174,7 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="displayName">Anzeigename</Label>
+                <Label htmlFor="displayName">Anzeigename *</Label>
                 <Input
                   id="displayName"
                   type="text"
@@ -199,6 +183,7 @@ const Profile = () => {
                   onChange={(e) => setDisplayName(e.target.value)}
                   disabled={loading}
                   maxLength={50}
+                  required
                 />
               </div>
 

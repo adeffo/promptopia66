@@ -23,11 +23,11 @@ const Auth = () => {
   useEffect(() => {
     // Listen for auth changes then check existing session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) navigate("/");
+      if (session) navigate("/prompt-gallery");
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate("/");
+      if (session) navigate("/prompt-gallery");
     });
 
     return () => subscription.unsubscribe();
@@ -44,7 +44,7 @@ const Auth = () => {
         email: validatedData.email,
         password: validatedData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/profile`,
         },
       });
 
@@ -54,6 +54,8 @@ const Auth = () => {
         title: t('toast.signupSuccess'),
         description: t('toast.signupSuccessDesc'),
       });
+      
+      navigate("/profile");
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({
@@ -91,7 +93,7 @@ const Auth = () => {
         title: t('toast.loginSuccess'),
         description: t('toast.loginSuccessDesc'),
       });
-      navigate("/");
+      navigate("/prompt-gallery");
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({
@@ -117,7 +119,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: `${window.location.origin}/prompt-gallery`,
         },
       });
 
