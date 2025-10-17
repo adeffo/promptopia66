@@ -8,15 +8,22 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import { profileSchema } from "@/lib/validations";
 import { z } from "zod";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Profile = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [instagramUrl, setInstagramUrl] = useState("");
   const [facebookUrl, setFacebookUrl] = useState("");
+  const [gender, setGender] = useState<string>("");
+  const [photoUrl1, setPhotoUrl1] = useState("");
+  const [photoUrl2, setPhotoUrl2] = useState("");
+  const [photoUrl3, setPhotoUrl3] = useState("");
+  const [uploadingPhoto, setUploadingPhoto] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -47,7 +54,7 @@ const Profile = () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("display_name, instagram_url, facebook_url")
+        .select("display_name, instagram_url, facebook_url, gender, photo_url_1, photo_url_2, photo_url_3")
         .eq("id", userId)
         .maybeSingle();
 
@@ -61,9 +68,113 @@ const Profile = () => {
         if (data?.display_name) setDisplayName(data.display_name);
         if (data?.instagram_url) setInstagramUrl(data.instagram_url);
         if (data?.facebook_url) setFacebookUrl(data.facebook_url);
+        if (data?.gender) setGender(data.gender);
+        if (data?.photo_url_1) setPhotoUrl1(data.photo_url_1);
+        if (data?.photo_url_2) setPhotoUrl2(data.photo_url_2);
+        if (data?.photo_url_3) setPhotoUrl3(data.photo_url_3);
       }
     } catch (error: any) {
       console.error("Error in fetchProfile:", error);
+    }
+  };
+
+  const handlePhotoUpload = async (file: File, photoNumber: number) => {
+    if (!session?.user?.id) return;
+    
+    setUploadingPhoto(photoNumber);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${session.user.id}/photo_${photoNumber}.${fileExt}`;
+      
+      // Delete old photo if exists
+      const oldPhotoUrl = photoNumber === 1 ? photoUrl1 : photoNumber === 2 ? photoUrl2 : photoUrl3;
+      if (oldPhotoUrl) {
+        const oldFileName = oldPhotoUrl.split('/').pop();
+        if (oldFileName) {
+          await supabase.storage
+            .from('profile-photos')
+            .remove([`${session.user.id}/${oldFileName}`]);
+        }
+      }
+      
+      // Upload new photo
+      const { error: uploadError } = await supabase.storage
+        .from('profile-photos')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(fileName);
+
+      // Update profile with new photo URL
+      const updateField = `photo_url_${photoNumber}`;
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ [updateField]: publicUrl })
+        .eq('id', session.user.id);
+
+      if (updateError) throw updateError;
+
+      // Update local state
+      if (photoNumber === 1) setPhotoUrl1(publicUrl);
+      else if (photoNumber === 2) setPhotoUrl2(publicUrl);
+      else if (photoNumber === 3) setPhotoUrl3(publicUrl);
+
+      toast({
+        title: "Foto hochgeladen",
+        description: `Foto ${photoNumber} wurde erfolgreich hochgeladen.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: error.message,
+      });
+    } finally {
+      setUploadingPhoto(null);
+    }
+  };
+
+  const handlePhotoDelete = async (photoNumber: number) => {
+    if (!session?.user?.id) return;
+    
+    try {
+      const photoUrl = photoNumber === 1 ? photoUrl1 : photoNumber === 2 ? photoUrl2 : photoUrl3;
+      if (!photoUrl) return;
+      
+      const fileName = photoUrl.split('/').pop();
+      if (!fileName) return;
+      
+      // Delete from storage
+      await supabase.storage
+        .from('profile-photos')
+        .remove([`${session.user.id}/${fileName}`]);
+
+      // Update profile
+      const updateField = `photo_url_${photoNumber}`;
+      await supabase
+        .from('profiles')
+        .update({ [updateField]: null })
+        .eq('id', session.user.id);
+
+      // Update local state
+      if (photoNumber === 1) setPhotoUrl1("");
+      else if (photoNumber === 2) setPhotoUrl2("");
+      else if (photoNumber === 3) setPhotoUrl3("");
+
+      toast({
+        title: "Foto gelöscht",
+        description: `Foto ${photoNumber} wurde erfolgreich gelöscht.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: error.message,
+      });
     }
   };
 
@@ -76,7 +187,11 @@ const Profile = () => {
       const validatedData = profileSchema.parse({ 
         display_name: displayName,
         instagram_url: instagramUrl || undefined,
-        facebook_url: facebookUrl || undefined
+        facebook_url: facebookUrl || undefined,
+        gender: gender || undefined,
+        photo_url_1: photoUrl1 || undefined,
+        photo_url_2: photoUrl2 || undefined,
+        photo_url_3: photoUrl3 || undefined,
       });
 
       // First check if profile exists
@@ -94,7 +209,8 @@ const Profile = () => {
           .update({ 
             display_name: validatedData.display_name,
             instagram_url: validatedData.instagram_url || null,
-            facebook_url: validatedData.facebook_url || null
+            facebook_url: validatedData.facebook_url || null,
+            gender: validatedData.gender || null,
           })
           .eq("id", session.user.id);
         error = result.error;
@@ -106,7 +222,8 @@ const Profile = () => {
             id: session.user.id,
             display_name: validatedData.display_name,
             instagram_url: validatedData.instagram_url || null,
-            facebook_url: validatedData.facebook_url || null
+            facebook_url: validatedData.facebook_url || null,
+            gender: validatedData.gender || null,
           });
         error = result.error;
       }
@@ -236,6 +353,107 @@ const Profile = () => {
                 )}
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/40 bg-gradient-card backdrop-blur">
+          <CardHeader>
+            <CardTitle>Private Informationen</CardTitle>
+            <CardDescription>
+              Diese Informationen sind nur für dich sichtbar
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Alert>
+              <AlertDescription>
+                🔒 Diese Daten (Geschlecht und Fotos) sind privat und nur für dich sichtbar.
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-2">
+              <Label>Geschlecht</Label>
+              <RadioGroup value={gender} onValueChange={setGender}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="male" id="male" />
+                  <Label htmlFor="male" className="font-normal cursor-pointer">Männlich</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="female" id="female" />
+                  <Label htmlFor="female" className="font-normal cursor-pointer">Weiblich</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="diverse" id="diverse" />
+                  <Label htmlFor="diverse" className="font-normal cursor-pointer">Divers</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="prefer_not_to_say" id="prefer_not_to_say" />
+                  <Label htmlFor="prefer_not_to_say" className="font-normal cursor-pointer">Nicht sagen</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-4">
+              <Label>Fotos (max. 3)</Label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[1, 2, 3].map((photoNumber) => {
+                  const photoUrl = photoNumber === 1 ? photoUrl1 : photoNumber === 2 ? photoUrl2 : photoUrl3;
+                  const isUploading = uploadingPhoto === photoNumber;
+                  
+                  return (
+                    <div key={photoNumber} className="space-y-2">
+                      <Label htmlFor={`photo${photoNumber}`}>Foto {photoNumber}</Label>
+                      {photoUrl ? (
+                        <div className="relative aspect-square rounded-lg overflow-hidden border border-border">
+                          <img 
+                            src={photoUrl} 
+                            alt={`Foto ${photoNumber}`} 
+                            className="w-full h-full object-cover"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-8 w-8"
+                            onClick={() => handlePhotoDelete(photoNumber)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <Input
+                            id={`photo${photoNumber}`}
+                            type="file"
+                            accept="image/*"
+                            disabled={isUploading}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handlePhotoUpload(file, photoNumber);
+                            }}
+                            className="hidden"
+                          />
+                          <Label
+                            htmlFor={`photo${photoNumber}`}
+                            className="flex flex-col items-center justify-center aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary cursor-pointer transition-colors"
+                          >
+                            {isUploading ? (
+                              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            ) : (
+                              <>
+                                <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                                <span className="text-sm text-muted-foreground text-center px-2">
+                                  Foto hochladen
+                                </span>
+                              </>
+                            )}
+                          </Label>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

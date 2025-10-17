@@ -21,4 +21,8 @@ export const profileSchema = z.object({
   display_name: z.string().trim().min(1, "Anzeigename erforderlich").max(50, "Anzeigename zu lang (max. 50 Zeichen)"),
   instagram_url: z.string().trim().url("Ungültige URL").optional().or(z.literal("")),
   facebook_url: z.string().trim().url("Ungültige URL").optional().or(z.literal("")),
+  gender: z.enum(["male", "female", "diverse", "prefer_not_to_say"]).optional(),
+  photo_url_1: z.string().optional(),
+  photo_url_2: z.string().optional(),
+  photo_url_3: z.string().optional(),
 });

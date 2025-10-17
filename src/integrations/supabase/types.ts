@@ -188,8 +188,12 @@ export type Database = {
           created_at: string
           display_name: string | null
           facebook_url: string | null
+          gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
           instagram_url: string | null
+          photo_url_1: string | null
+          photo_url_2: string | null
+          photo_url_3: string | null
           updated_at: string
         }
         Insert: {
@@ -197,8 +201,12 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           facebook_url?: string | null
+          gender?: Database["public"]["Enums"]["gender_type"] | null
           id: string
           instagram_url?: string | null
+          photo_url_1?: string | null
+          photo_url_2?: string | null
+          photo_url_3?: string | null
           updated_at?: string
         }
         Update: {
@@ -206,8 +214,12 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           facebook_url?: string | null
+          gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           instagram_url?: string | null
+          photo_url_1?: string | null
+          photo_url_2?: string | null
+          photo_url_3?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -354,6 +366,7 @@ export type Database = {
     }
     Enums: {
       app_role: "guest" | "user" | "vip" | "moderator" | "admin"
+      gender_type: "male" | "female" | "diverse" | "prefer_not_to_say"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -482,6 +495,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["guest", "user", "vip", "moderator", "admin"],
+      gender_type: ["male", "female", "diverse", "prefer_not_to_say"],
     },
   },
 } as const
