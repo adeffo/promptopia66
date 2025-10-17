@@ -12,39 +12,109 @@ serve(async (req) => {
   }
 
   try {
-    const { promptText, gender, hasPhotos } = await req.json();
+    const body = await req.json();
+    const { promptText, gender, hasPhotos } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    const action = body.action || 'personalize';
+    
+    if (action === 'extract') {
+      console.log("Extracting characteristics from prompt");
+      
+      const extractSystemPrompt = `Du bist ein Experte für die Analyse von AI-Bildgenerierungs-Prompts.
+    
+Deine Aufgabe: Extrahiere alle persönlichen Merkmale aus dem Prompt und gib sie als JSON zurück.
+
+Zu extrahierende Merkmale:
+- gender: z.B. "woman", "man", "person"
+- hairColor: z.B. "orange", "blonde", "black"
+- hairLength: z.B. "long", "short", "medium"
+- eyeColor: z.B. "blue", "brown", "green"
+- age: z.B. "young", "middle-aged", "elderly"
+- bodyType: z.B. "athletic", "slim", "curvy"
+- skinTone: z.B. "pale", "tan", "dark"
+- other: Alle anderen persönlichen Beschreibungen
+
+Gib NUR ein JSON-Objekt zurück mit den gefundenen Merkmalen. Wenn ein Merkmal nicht gefunden wird, lass es weg.
+Beispiel: {"gender": "woman", "hairColor": "orange", "hairLength": "long"}`;
+
+      const extractUserPrompt = `Prompt: ${promptText}`;
+
+      const extractResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: extractSystemPrompt },
+            { role: "user", content: extractUserPrompt }
+          ],
+        }),
+      });
+
+      if (!extractResponse.ok) {
+        const errorText = await extractResponse.text();
+        console.error("AI Gateway Error:", extractResponse.status, errorText);
+        
+        if (extractResponse.status === 429) {
+          return new Response(JSON.stringify({ error: "Zu viele Anfragen. Bitte versuche es später erneut." }), {
+            status: 429,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        
+        if (extractResponse.status === 402) {
+          return new Response(JSON.stringify({ error: "Zahlungspflicht. Bitte Guthaben aufladen." }), {
+            status: 402,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        
+        throw new Error(`AI Gateway Error: ${extractResponse.status}`);
+      }
+
+      const extractData = await extractResponse.json();
+      const extractedCharacteristics = extractData.choices[0].message.content;
+      
+      console.log("Extracted characteristics:", extractedCharacteristics);
+
+      return new Response(JSON.stringify({ characteristics: extractedCharacteristics }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Personalize with user-provided characteristics
     console.log("Personalizing prompt with gender:", gender, "hasPhotos:", hasPhotos);
+    
+    const userCharacteristics = body.characteristics || {};
 
-    const systemPrompt = `Du bist ein Experte für die Personalisierung von AI-Bildgenerierungs-Prompts. 
-Deine Aufgabe ist es, den gegebenen Prompt basierend auf dem Geschlecht des Users anzupassen.
+    const systemPrompt = `Du bist ein Experte für die Personalisierung von AI-Bildgenerierungs-Prompts.
+  
+Deine Aufgabe:
+1. Analysiere den gegebenen Prompt
+2. Ersetze die persönlichen Merkmale mit den vom Nutzer angegebenen Werten
 
-WICHTIGE REGELN:
-1. Wenn "man" oder "male" im Prompt vorkommt und das Geschlecht "female" ist, ersetze es durch "woman" oder "female"
-2. Wenn "woman" oder "female" im Prompt vorkommt und das Geschlecht "male" ist, ersetze es durch "man" oder "male"
-3. Wenn das Geschlecht "diverse" oder "prefer_not_to_say" ist, verwende neutrale Begriffe wie "person"
-4. Behalte den Rest des Prompts EXAKT bei - ändere nur geschlechtsspezifische Begriffe
-5. Achte auf verschiedene Schreibweisen: man/men, woman/women, male/female, männlich/weiblich, etc.
-6. Passe auch verwandte Begriffe an wie "his/her", "him/her", "boy/girl", "guy/gal", etc.
-7. Gib NUR den angepassten Prompt zurück, keine Erklärungen
-
-Beispiele:
-- "Full-body shot of a man" + female = "Full-body shot of a woman"
-- "Portrait of a woman" + male = "Portrait of a man"
-- "Beautiful man in suit" + diverse = "Beautiful person in suit"`;
+Wichtige Regeln:
+- Verwende GENAU die vom Nutzer angegebenen Merkmale
+- Behalte die Struktur und den Stil des Original-Prompts bei
+- Ersetze nur die persönlichen Beschreibungen
+- Gib NUR den angepassten Prompt zurück, ohne zusätzliche Erklärungen oder Formatierungen.`;
 
     const userPrompt = `Geschlecht: ${gender}
 Hat Profilfotos: ${hasPhotos}
+Nutzer-Merkmale: ${JSON.stringify(userCharacteristics)}
 
 Original Prompt:
 ${promptText}
 
-Bitte passe diesen Prompt an das Geschlecht an. Gib nur den angepassten Prompt zurück.`;
+Bitte passe diesen Prompt mit den angegebenen Merkmalen an. Gib nur den angepassten Prompt zurück.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

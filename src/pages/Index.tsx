@@ -41,7 +41,7 @@ const Index = () => {
             size="lg"
             className="w-full sm:w-auto bg-gradient-primary shadow-glow text-lg px-8 py-6"
           >
-            <Link to="/prompt-gallery">
+            <Link to="/prompt-gallerie">
               <Search className="mr-2 h-5 w-5" />
               Prompts entdecken
             </Link>

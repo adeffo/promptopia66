@@ -63,6 +63,9 @@ export const PromptDetailDialog = ({
   const [editImagePreview, setEditImagePreview] = useState("");
   const [personalizedPrompt, setPersonalizedPrompt] = useState<string | null>(null);
   const [personalizing, setPersonalizing] = useState(false);
+  const [extractedCharacteristics, setExtractedCharacteristics] = useState<any>(null);
+  const [showCharacteristics, setShowCharacteristics] = useState(false);
+  const [editableCharacteristics, setEditableCharacteristics] = useState<any>({});
   const { toast } = useToast();
   const { language, t } = useLanguage();
 
@@ -328,55 +331,107 @@ export const PromptDetailDialog = ({
     }
   };
 
-  const handlePersonalizePrompt = async () => {
-    if (!userId) {
-      toast({
-        variant: "destructive",
-        title: "Anmeldung erforderlich",
-        description: "Bitte melde dich an, um diese Funktion zu nutzen.",
-      });
-      return;
-    }
+  const handleExtractCharacteristics = async () => {
+    if (!prompt || !userId) return;
 
     setPersonalizing(true);
     try {
-      // Fetch user profile
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("gender, photo_url_1, photo_url_2, photo_url_3")
-        .eq("id", userId)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('gender, photo_url_1, photo_url_2, photo_url_3')
+        .eq('id', userId)
         .single();
 
-      if (profileError) throw profileError;
-
       const hasPhotos = !!(profile?.photo_url_1 || profile?.photo_url_2 || profile?.photo_url_3);
-      const gender = profile?.gender || "prefer_not_to_say";
 
-      // Call edge function to personalize prompt
       const { data, error } = await supabase.functions.invoke('personalize-prompt', {
         body: {
+          action: 'extract',
           promptText: prompt.prompt_text,
-          gender,
+          gender: profile?.gender || 'prefer_not_to_say',
+          hasPhotos
+        }
+      });
+
+      if (error) throw error;
+
+      let characteristics = {};
+      try {
+        const cleanedContent = data.characteristics.replace(/```json\n?|\n?```/g, '').trim();
+        characteristics = JSON.parse(cleanedContent);
+      } catch (e) {
+        characteristics = {};
+      }
+
+      setExtractedCharacteristics(characteristics);
+      setEditableCharacteristics(characteristics);
+      setShowCharacteristics(true);
+      
+      toast({
+        title: "Merkmale erkannt",
+        description: "Bitte überprüfe und passe die erkannten Merkmale an.",
+      });
+    } catch (error: any) {
+      console.error('Error extracting characteristics:', error);
+      toast({
+        title: "Fehler",
+        description: "Die Merkmale konnten nicht extrahiert werden.",
+        variant: "destructive",
+      });
+    } finally {
+      setPersonalizing(false);
+    }
+  };
+
+  const handlePersonalizeWithCharacteristics = async () => {
+    if (!prompt || !userId) return;
+
+    setPersonalizing(true);
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('gender, photo_url_1, photo_url_2, photo_url_3')
+        .eq('id', userId)
+        .single();
+
+      const hasPhotos = !!(profile?.photo_url_1 || profile?.photo_url_2 || profile?.photo_url_3);
+
+      const { data, error } = await supabase.functions.invoke('personalize-prompt', {
+        body: {
+          action: 'personalize',
+          promptText: prompt.prompt_text,
+          gender: profile?.gender || 'prefer_not_to_say',
           hasPhotos,
+          characteristics: editableCharacteristics
         }
       });
 
       if (error) throw error;
 
       setPersonalizedPrompt(data.personalizedPrompt);
+      setShowCharacteristics(false);
+      
       toast({
-        title: "Prompt personalisiert!",
-        description: "Der Prompt wurde auf dich angepasst.",
+        title: "Prompt personalisiert",
+        description: "Der Prompt wurde erfolgreich an deine Merkmale angepasst.",
       });
     } catch (error: any) {
+      console.error('Error personalizing prompt:', error);
       toast({
-        variant: "destructive",
         title: "Fehler",
-        description: error.message || "Personalisierung fehlgeschlagen.",
+        description: "Der Prompt konnte nicht personalisiert werden.",
+        variant: "destructive",
       });
     } finally {
       setPersonalizing(false);
     }
+  };
+
+  const handleCharacteristicChange = (key: string, value: string) => {
+    setEditableCharacteristics(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
   const handleEditToggle = () => {
@@ -692,10 +747,10 @@ export const PromptDetailDialog = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handlePersonalizePrompt}
+                    onClick={handleExtractCharacteristics}
                     disabled={personalizing}
                   >
-                    {personalizing ? "Wird angepasst..." : "An mir testen"}
+                    {personalizing ? "Wird analysiert..." : "An mir testen"}
                   </Button>
                 )}
                 <Button
@@ -712,9 +767,54 @@ export const PromptDetailDialog = ({
               </div>
             </div>
             <div className="rounded-lg bg-muted/50 p-4">
-                <p className="whitespace-pre-wrap text-sm">{prompt.prompt_text}</p>
+              <p className="whitespace-pre-wrap text-sm">{prompt.prompt_text}</p>
+            </div>
+          </div>
+
+          {/* Extracted Characteristics Form */}
+          {showCharacteristics && extractedCharacteristics && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-primary">Erkannte persönliche Merkmale</h3>
+                <Button
+                  onClick={handlePersonalizeWithCharacteristics}
+                  disabled={personalizing}
+                  size="sm"
+                >
+                  {personalizing ? "Wird angepasst..." : "Prompt personalisieren"}
+                </Button>
+              </div>
+              <div className="rounded-lg bg-primary/10 p-4 border border-primary/20 space-y-3">
+                <p className="text-sm text-muted-foreground mb-3">
+                  Bitte überprüfe die erkannten Merkmale und passe sie bei Bedarf an:
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {Object.entries(editableCharacteristics).map(([key, value]) => {
+                    const labels: { [key: string]: string } = {
+                      gender: 'Geschlecht',
+                      hairColor: 'Haarfarbe',
+                      hairLength: 'Haarlänge',
+                      eyeColor: 'Augenfarbe',
+                      age: 'Alter',
+                      bodyType: 'Körperbau',
+                      skinTone: 'Hautfarbe',
+                      other: 'Weitere Merkmale'
+                    };
+                    return (
+                      <div key={key} className="space-y-1">
+                        <label className="text-sm font-medium">{labels[key] || key}</label>
+                        <Input
+                          value={value as string}
+                          onChange={(e) => handleCharacteristicChange(key, e.target.value)}
+                          className="bg-background"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
+          )}
 
             {/* Personalized Prompt */}
             {personalizedPrompt && (
