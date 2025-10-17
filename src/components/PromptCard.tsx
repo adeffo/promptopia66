@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, MessageCircle, User, Star } from "lucide-react";
+import { Star, MessageCircle, User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
@@ -13,11 +13,9 @@ interface PromptCardProps {
   imageUrl: string;
   creator: string;
   createdAt: string;
-  likesCount: number;
   favoritesCount: number;
   commentsCount: number;
   tags?: string[];
-  isLiked?: boolean;
   isFavorited?: boolean;
   onClick?: () => void;
   creatorId?: string;
@@ -28,11 +26,9 @@ export const PromptCard = ({
   imageUrl,
   creator,
   createdAt,
-  likesCount,
   favoritesCount,
   commentsCount,
   tags,
-  isLiked,
   isFavorited,
   onClick,
   creatorId,
@@ -107,14 +103,6 @@ export const PromptCard = ({
         {/* Stats */}
         <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-3">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 text-sm">
-              <Heart
-                className={`h-4 w-4 transition-colors ${
-                  isLiked ? "fill-red-500 text-red-500" : "text-muted-foreground"
-                }`}
-              />
-              <span className="font-medium">{likesCount}</span>
-            </div>
             <div className="flex items-center gap-1.5 text-sm">
               <Star
                 className={`h-4 w-4 transition-colors ${

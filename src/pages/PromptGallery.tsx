@@ -32,7 +32,6 @@ interface Prompt {
   image_url: string;
   creator_id: string;
   created_at: string;
-  likes_count: number;
   favorites_count: number;
   comments_count: number;
   tags: string[];
@@ -139,10 +138,6 @@ const Index = () => {
           return b.comments_count - a.comments_count;
         case "comments_asc":
           return a.comments_count - b.comments_count;
-        case "likes_desc":
-          return b.likes_count - a.likes_count;
-        case "likes_asc":
-          return a.likes_count - b.likes_count;
         case "favorites_desc":
           return b.favorites_count - a.favorites_count;
         case "favorites_asc":
@@ -245,8 +240,6 @@ const Index = () => {
                 <SelectContent>
                   <SelectItem value="created_at_desc">{t('sort.latest')}</SelectItem>
                   <SelectItem value="created_at_asc">{t('sort.oldest')}</SelectItem>
-                  <SelectItem value="likes_desc">Meiste Likes</SelectItem>
-                  <SelectItem value="likes_asc">Wenigste Likes</SelectItem>
                   <SelectItem value="favorites_desc">{t('sort.favoritesDesc')}</SelectItem>
                   <SelectItem value="favorites_asc">{t('sort.favoritesAsc')}</SelectItem>
                   <SelectItem value="comments_desc">{t('sort.commentsDesc')}</SelectItem>
@@ -312,7 +305,6 @@ const Index = () => {
                       creator={prompt.profiles?.display_name || "Unbekannt"}
                       creatorId={prompt.creator_id}
                       createdAt={prompt.created_at}
-                      likesCount={prompt.likes_count}
                       favoritesCount={prompt.favorites_count}
                       commentsCount={prompt.comments_count}
                       tags={prompt.tags}
