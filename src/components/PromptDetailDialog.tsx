@@ -61,6 +61,8 @@ export const PromptDetailDialog = ({
   const [editPromptText, setEditPromptText] = useState("");
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState("");
+  const [personalizedPrompt, setPersonalizedPrompt] = useState<string | null>(null);
+  const [personalizing, setPersonalizing] = useState(false);
   const { toast } = useToast();
   const { language, t } = useLanguage();
 
@@ -313,15 +315,67 @@ export const PromptDetailDialog = ({
     }
   };
 
-  const copyPromptText = () => {
-    if (prompt?.prompt_text) {
-      navigator.clipboard.writeText(prompt.prompt_text);
+  const copyPromptText = (text?: string) => {
+    const textToCopy = text || prompt?.prompt_text;
+    if (textToCopy) {
+      navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       toast({
         title: "Kopiert!",
         description: "Prompt-Text wurde in die Zwischenablage kopiert.",
       });
+    }
+  };
+
+  const handlePersonalizePrompt = async () => {
+    if (!userId) {
+      toast({
+        variant: "destructive",
+        title: "Anmeldung erforderlich",
+        description: "Bitte melde dich an, um diese Funktion zu nutzen.",
+      });
+      return;
+    }
+
+    setPersonalizing(true);
+    try {
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("gender, photo_url_1, photo_url_2, photo_url_3")
+        .eq("id", userId)
+        .single();
+
+      if (profileError) throw profileError;
+
+      const hasPhotos = !!(profile?.photo_url_1 || profile?.photo_url_2 || profile?.photo_url_3);
+      const gender = profile?.gender || "prefer_not_to_say";
+
+      // Call edge function to personalize prompt
+      const { data, error } = await supabase.functions.invoke('personalize-prompt', {
+        body: {
+          promptText: prompt.prompt_text,
+          gender,
+          hasPhotos,
+        }
+      });
+
+      if (error) throw error;
+
+      setPersonalizedPrompt(data.personalizedPrompt);
+      toast({
+        title: "Prompt personalisiert!",
+        description: "Der Prompt wurde auf dich angepasst.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: error.message || "Personalisierung fehlgeschlagen.",
+      });
+    } finally {
+      setPersonalizing(false);
     }
   };
 
@@ -633,22 +687,57 @@ export const PromptDetailDialog = ({
             <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold">Prompt Text</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={copyPromptText}
-              >
-                {copied ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
+              <div className="flex gap-2">
+                {userId && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePersonalizePrompt}
+                    disabled={personalizing}
+                  >
+                    {personalizing ? "Wird angepasst..." : "An mir testen"}
+                  </Button>
                 )}
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => copyPromptText()}
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
             <div className="rounded-lg bg-muted/50 p-4">
                 <p className="whitespace-pre-wrap text-sm">{prompt.prompt_text}</p>
               </div>
             </div>
+
+            {/* Personalized Prompt */}
+            {personalizedPrompt && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-primary">Personalisierter Prompt (für dich)</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyPromptText(personalizedPrompt)}
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <div className="rounded-lg bg-primary/10 p-4 border border-primary/20">
+                  <p className="whitespace-pre-wrap text-sm">{personalizedPrompt}</p>
+                </div>
+              </div>
+            )}
 
             <Separator />
 
