@@ -1,9 +1,35 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Sparkles, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 
 const Index = () => {
+  const [session, setSession] = useState<Session | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    navigate("/prompt-gallerie");
+  };
+
   return (
     <Layout user={session?.user} onLogout={handleLogout}>
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -36,7 +62,7 @@ const Index = () => {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
             <Button asChild size="lg" className="w-full sm:w-auto bg-gradient-primary shadow-glow text-lg px-8 py-6">
-              <Link to="/prompt-gallery">
+              <Link to="/prompt-gallerie">
                 <Search className="mr-2 h-5 w-5" />
                 Prompts entdecken
               </Link>
