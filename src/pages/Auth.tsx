@@ -143,7 +143,7 @@ const Auth = () => {
             <Sparkles className="h-10 w-10 text-primary-foreground" />
           </div>
           <h1 className="bg-gradient-primary bg-clip-text text-4xl font-bold text-transparent">
-            PromptHub
+            Promptopia
           </h1>
           <p className="text-center text-muted-foreground">
             {t('auth.tagline')}
