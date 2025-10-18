@@ -377,63 +377,6 @@ const Profile = () => {
                 </div>
               </RadioGroup>
             </div>
-
-            <div className="space-y-4">
-              <Label>Fotos (max. 3)</Label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[1, 2, 3].map((photoNumber) => {
-                  const photoUrl = photoNumber === 1 ? photoUrl1 : photoNumber === 2 ? photoUrl2 : photoUrl3;
-                  const isUploading = uploadingPhoto === photoNumber;
-
-                  return (
-                    <div key={photoNumber} className="space-y-2">
-                      <Label htmlFor={`photo${photoNumber}`}>Foto {photoNumber}</Label>
-                      {photoUrl ? (
-                        <div className="relative aspect-square rounded-lg overflow-hidden border border-border">
-                          <img src={photoUrl} alt={`Foto ${photoNumber}`} className="w-full h-full object-cover" />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-2 right-2 h-8 w-8"
-                            onClick={() => handlePhotoDelete(photoNumber)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="relative">
-                          <Input
-                            id={`photo${photoNumber}`}
-                            type="file"
-                            accept="image/*"
-                            disabled={isUploading}
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handlePhotoUpload(file, photoNumber);
-                            }}
-                            className="hidden"
-                          />
-                          <Label
-                            htmlFor={`photo${photoNumber}`}
-                            className="flex flex-col items-center justify-center aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary cursor-pointer transition-colors"
-                          >
-                            {isUploading ? (
-                              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                            ) : (
-                              <>
-                                <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                                <span className="text-sm text-muted-foreground text-center px-2">Foto hochladen</span>
-                              </>
-                            )}
-                          </Label>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
