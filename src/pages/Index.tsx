@@ -62,7 +62,7 @@ const Index = () => {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
             <Button asChild size="lg" className="w-full sm:w-auto bg-gradient-primary shadow-glow text-lg px-8 py-6">
-              <Link to="/prompt-gallerie">
+              <Link to="/prompt-gallery">
                 <Search className="mr-2 h-5 w-5" />
                 Prompts entdecken
               </Link>
