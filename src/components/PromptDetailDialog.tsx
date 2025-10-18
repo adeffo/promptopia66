@@ -66,6 +66,12 @@ export const PromptDetailDialog = ({
   const [extractedCharacteristics, setExtractedCharacteristics] = useState<any>(null);
   const [showCharacteristics, setShowCharacteristics] = useState(false);
   const [editableCharacteristics, setEditableCharacteristics] = useState<any>({});
+  const [clothing, setClothing] = useState("");
+  const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
+  const [uploadedPhotoFile, setUploadedPhotoFile] = useState<File | null>(null);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [generatingImage, setGeneratingImage] = useState(false);
+  const [userGender, setUserGender] = useState<string | null>(null);
   const { toast } = useToast();
   const { language, t } = useLanguage();
 
@@ -342,6 +348,7 @@ export const PromptDetailDialog = ({
         .eq('id', userId)
         .single();
 
+      setUserGender(profile?.gender || null);
       const hasPhotos = !!(profile?.photo_url_1 || profile?.photo_url_2 || profile?.photo_url_3);
 
       const { data, error } = await supabase.functions.invoke('personalize-prompt', {
@@ -432,6 +439,77 @@ export const PromptDetailDialog = ({
       ...prev,
       [key]: value
     }));
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          variant: "destructive",
+          title: "Datei zu groß",
+          description: "Das Bild darf maximal 10 MB groß sein.",
+        });
+        return;
+      }
+
+      setUploadedPhotoFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setUploadedPhoto(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGenerateImage = async () => {
+    if (!personalizedPrompt) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: "Bitte personalisiere zuerst den Prompt.",
+      });
+      return;
+    }
+
+    setGeneratingImage(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-personalized-image', {
+        body: {
+          personalizedPrompt: personalizedPrompt + (clothing ? ` wearing ${clothing}` : ''),
+          referenceImage: uploadedPhoto
+        }
+      });
+
+      if (error) throw error;
+
+      setGeneratedImage(data.imageUrl);
+      
+      toast({
+        title: "Bild generiert",
+        description: "Dein personalisiertes Bild wurde erfolgreich erstellt.",
+      });
+    } catch (error: any) {
+      console.error('Error generating image:', error);
+      toast({
+        title: "Fehler",
+        description: error.message || "Das Bild konnte nicht generiert werden.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingImage(false);
+    }
+  };
+
+  const handleDownloadImage = () => {
+    if (!generatedImage) return;
+
+    const link = document.createElement('a');
+    link.href = generatedImage;
+    link.download = `personalisiert-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleEditToggle = () => {
@@ -785,13 +863,20 @@ export const PromptDetailDialog = ({
                 </Button>
               </div>
               <div className="rounded-lg bg-primary/10 p-4 border border-primary/20 space-y-3">
+                {userGender && (
+                  <div className="text-sm">
+                    <span className="font-medium">Geschlecht aus Profil: </span>
+                    <span className="text-muted-foreground">
+                      {userGender === 'male' ? 'Männlich' : userGender === 'female' ? 'Weiblich' : userGender === 'diverse' ? 'Divers' : 'Nicht angegeben'}
+                    </span>
+                  </div>
+                )}
                 <p className="text-sm text-muted-foreground mb-3">
                   Bitte überprüfe die erkannten Merkmale und passe sie bei Bedarf an:
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {Object.entries(editableCharacteristics).map(([key, value]) => {
                     const labels: { [key: string]: string } = {
-                      gender: 'Geschlecht',
                       hairColor: 'Haarfarbe',
                       hairLength: 'Haarlänge',
                       eyeColor: 'Augenfarbe',
@@ -812,30 +897,99 @@ export const PromptDetailDialog = ({
                     );
                   })}
                 </div>
+                
+                {/* Clothing Input */}
+                <div className="space-y-2 pt-3 border-t">
+                  <Label htmlFor="clothing">Bekleidung (optional)</Label>
+                  <Input
+                    id="clothing"
+                    value={clothing}
+                    onChange={(e) => setClothing(e.target.value)}
+                    placeholder="z.B. rotes Kleid, schwarzer Anzug, Jeans und T-Shirt"
+                    className="bg-background"
+                  />
+                </div>
+
+                {/* Photo Upload */}
+                <div className="space-y-2 pt-3 border-t">
+                  <Label htmlFor="photo-upload">Dein Foto hochladen (optional)</Label>
+                  <Input
+                    id="photo-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="bg-background"
+                  />
+                  {uploadedPhoto && (
+                    <div className="mt-2">
+                      <img
+                        src={uploadedPhoto}
+                        alt="Hochgeladenes Foto"
+                        className="w-32 h-32 object-cover rounded-lg border"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
             {/* Personalized Prompt */}
             {personalizedPrompt && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-primary">Personalisierter Prompt (für dich)</h3>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-primary">Personalisierter Prompt (für dich)</h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyPromptText(personalizedPrompt)}
+                    >
+                      {copied ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <div className="rounded-lg bg-primary/10 p-4 border border-primary/20">
+                    <p className="whitespace-pre-wrap text-sm">{personalizedPrompt}</p>
+                  </div>
+                </div>
+
+                {/* Generate Image Button */}
+                <div className="flex justify-center">
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyPromptText(personalizedPrompt)}
+                    onClick={handleGenerateImage}
+                    disabled={generatingImage}
+                    className="bg-gradient-primary shadow-glow"
                   >
-                    {copied ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
+                    {generatingImage ? "Bild wird generiert..." : "Bild mit meinen Merkmalen generieren"}
                   </Button>
                 </div>
-                <div className="rounded-lg bg-primary/10 p-4 border border-primary/20">
-                  <p className="whitespace-pre-wrap text-sm">{personalizedPrompt}</p>
-                </div>
+
+                {/* Generated Image */}
+                {generatedImage && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-primary">Generiertes Bild</h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDownloadImage}
+                      >
+                        Herunterladen
+                      </Button>
+                    </div>
+                    <div className="rounded-lg overflow-hidden border border-primary/20">
+                      <img
+                        src={generatedImage}
+                        alt="Generiertes Bild"
+                        className="w-full h-auto"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
