@@ -145,7 +145,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
 
           {/* Left: Logo & Desktop Navigation */}
           <div className="flex items-center gap-6">
-            <Link to="/prompt-gallery" className="flex items-center gap-2 transition-transform hover:scale-105">
+            <Link to="/" className="flex items-center gap-2 transition-transform hover:scale-105">
               <div className="rounded-lg bg-gradient-primary p-2 shadow-glow">
                 <Sparkles className="h-5 w-5 text-primary-foreground" />
               </div>
