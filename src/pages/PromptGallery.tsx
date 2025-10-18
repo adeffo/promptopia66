@@ -10,13 +10,7 @@ import { Search, Sparkles, Plus, Upload, ChevronLeft, ChevronRight } from "lucid
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Pagination,
   PaginationContent,
@@ -54,7 +48,7 @@ const Index = () => {
   const [selectedPromptId, setSelectedPromptId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [showMarketplace, setShowMarketplace] = useState(searchParams.get('view') === 'gallery');
+  const [showMarketplace, setShowMarketplace] = useState(searchParams.get("view") === "gallery");
   const [currentPage, setCurrentPage] = useState(1);
   const [userFavorites, setUserFavorites] = useState<UserFavorites>({});
   const { toast } = useToast();
@@ -66,18 +60,18 @@ const Index = () => {
 
   // Reset to landing page when navigating back to home without query params
   useEffect(() => {
-    if (searchParams.get('view') !== 'gallery') {
+    if (searchParams.get("view") !== "gallery") {
       setShowMarketplace(false);
     }
   }, [searchParams]);
 
   useEffect(() => {
     // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-      }
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+    });
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -101,20 +95,17 @@ const Index = () => {
     if (!session?.user?.id) return;
 
     try {
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('prompt_id')
-        .eq('user_id', session.user.id);
+      const { data, error } = await supabase.from("favorites").select("prompt_id").eq("user_id", session.user.id);
 
       if (error) throw error;
 
       const favoritesMap: UserFavorites = {};
-      data?.forEach(fav => {
+      data?.forEach((fav) => {
         favoritesMap[fav.prompt_id] = true;
       });
       setUserFavorites(favoritesMap);
     } catch (error: any) {
-      console.error('Error fetching favorites:', error);
+      console.error("Error fetching favorites:", error);
     }
   };
 
@@ -122,13 +113,15 @@ const Index = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('prompts')
-        .select(`
+        .from("prompts")
+        .select(
+          `
           *,
           profiles:creator_id (display_name)
-        `)
-        .eq('visibility', 'public')
-        .order('created_at', { ascending: false });
+        `,
+        )
+        .eq("visibility", "public")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
@@ -148,22 +141,23 @@ const Index = () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast({
-        title: t('toast.error'),
+        title: t("toast.error"),
         description: error.message,
         variant: "destructive",
       });
     } else {
       toast({
-        title: t('toast.logoutSuccess'),
-        description: t('toast.logoutSuccessDesc'),
+        title: t("toast.logoutSuccess"),
+        description: t("toast.logoutSuccessDesc"),
       });
     }
   };
 
   const filteredPrompts = prompts
-    .filter(prompt => 
-      prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      prompt.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter(
+      (prompt) =>
+        prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        prompt.tags?.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())),
     )
     .sort((a, b) => {
       switch (sortBy) {
@@ -203,57 +197,12 @@ const Index = () => {
 
   return (
     <Layout user={session?.user} onLogout={handleLogout}>
-      {!showMarketplace ? (
-        /* Hero Section - Landing View */
-        <div className="flex min-h-[70vh] flex-col items-center justify-center text-center">
-          <div className="mb-8 inline-flex items-center gap-3">
-            <div className="rounded-xl bg-gradient-primary p-4 shadow-glow animate-glow">
-              <Sparkles className="h-12 w-12 text-primary-foreground" />
-            </div>
-          </div>
-          <h1 className="mb-4 bg-gradient-hero bg-clip-text text-5xl font-bold text-transparent md:text-6xl">
-            {t('hero.title')}
-          </h1>
-          <p className="mb-2 text-xl font-semibold text-foreground md:text-2xl">
-            {t('hero.subtitle')}
-          </p>
-          <p className="mx-auto mb-4 max-w-2xl text-lg text-muted-foreground">
-            {t('hero.description')}
-          </p>
-          <p className="mx-auto mb-12 max-w-2xl text-base font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Melde dich an, um eigene Prompts zu <span className="text-accent">speichern</span> und die besten Ideen anderer zu <span className="text-accent">favorisieren</span>.
-          </p>
-          
-          {/* Action Buttons */}
-          <div className="flex flex-col gap-4 w-full max-w-md px-4">
-            <Button
-              onClick={() => {
-                setShowMarketplace(true);
-                setSearchParams({ view: 'gallery' });
-              }}
-              size="lg"
-              className="bg-gradient-primary shadow-glow w-full h-14 text-base"
-            >
-              <Search className="mr-2 h-5 w-5" />
-              {t('btn.discoverPrompts')}
-            </Button>
-            <Button
-              onClick={() => navigate("/prompt-creator")}
-              size="lg"
-              variant="outline"
-              className="w-full h-14 text-base"
-            >
-              <Sparkles className="mr-2 h-5 w-5" />
-              {t('btn.generatePrompt')}
-            </Button>
-          </div>
-        </div>
-      ) : (
+      {
         <>
           {/* Gallery View */}
           <div className="mb-8 text-center">
             <h1 className="mb-4 bg-gradient-hero bg-clip-text text-4xl font-bold text-transparent">
-              {t('nav.gallery')}
+              {t("nav.gallery")}
             </h1>
           </div>
 
@@ -264,7 +213,7 @@ const Index = () => {
                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder={t('search.placeholder')}
+                  placeholder={t("search.placeholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="h-12 pl-12 pr-4 border-border/40 bg-card/50 backdrop-blur w-full"
@@ -275,14 +224,14 @@ const Index = () => {
                   <SelectValue placeholder="Sortieren nach..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="created_at_desc">{t('sort.latest')}</SelectItem>
-                  <SelectItem value="created_at_asc">{t('sort.oldest')}</SelectItem>
+                  <SelectItem value="created_at_desc">{t("sort.latest")}</SelectItem>
+                  <SelectItem value="created_at_asc">{t("sort.oldest")}</SelectItem>
                   <SelectItem value="likes_desc">Meiste Likes</SelectItem>
                   <SelectItem value="likes_asc">Wenigste Likes</SelectItem>
-                  <SelectItem value="favorites_desc">{t('sort.favoritesDesc')}</SelectItem>
-                  <SelectItem value="favorites_asc">{t('sort.favoritesAsc')}</SelectItem>
-                  <SelectItem value="comments_desc">{t('sort.commentsDesc')}</SelectItem>
-                  <SelectItem value="comments_asc">{t('sort.commentsAsc')}</SelectItem>
+                  <SelectItem value="favorites_desc">{t("sort.favoritesDesc")}</SelectItem>
+                  <SelectItem value="favorites_asc">{t("sort.favoritesAsc")}</SelectItem>
+                  <SelectItem value="comments_desc">{t("sort.commentsDesc")}</SelectItem>
+                  <SelectItem value="comments_asc">{t("sort.commentsAsc")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -292,8 +241,8 @@ const Index = () => {
                   if (!session) {
                     toast({
                       variant: "destructive",
-                      title: t('toast.loginRequired'),
-                      description: t('toast.loginRequiredDesc'),
+                      title: t("toast.loginRequired"),
+                      description: t("toast.loginRequiredDesc"),
                     });
                     navigate("/auth");
                     return;
@@ -303,15 +252,15 @@ const Index = () => {
                 className="bg-gradient-primary shadow-glow w-full"
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {t('btn.uploadPrompt')}
+                {t("btn.uploadPrompt")}
               </Button>
               <Button
                 onClick={() => {
                   if (!session) {
                     toast({
                       variant: "destructive",
-                      title: t('toast.loginRequired'),
-                      description: t('toast.loginRequiredDesc'),
+                      title: t("toast.loginRequired"),
+                      description: t("toast.loginRequiredDesc"),
                     });
                     navigate("/auth");
                     return;
@@ -322,7 +271,7 @@ const Index = () => {
                 className="gap-2 w-full"
               >
                 <Sparkles className="h-4 w-4" />
-                {t('btn.generatePrompt')}
+                {t("btn.generatePrompt")}
               </Button>
             </div>
           </div>
@@ -330,7 +279,7 @@ const Index = () => {
           {/* Prompts Grid */}
           {loading ? (
             <div className="py-12 text-center">
-              <p className="text-muted-foreground">{t('loading.prompts')}</p>
+              <p className="text-muted-foreground">{t("loading.prompts")}</p>
             </div>
           ) : filteredPrompts.length > 0 ? (
             <>
@@ -358,13 +307,8 @@ const Index = () => {
               {/* Guest Login Prompt */}
               {isGuest && filteredPrompts.length > GUEST_LIMIT && (
                 <div className="mt-8 text-center py-8 border-t border-border/40">
-                  <p className="text-lg font-semibold text-muted-foreground mb-4">
-                    Mehr Prompts nach dem Login
-                  </p>
-                  <Button
-                    onClick={() => navigate("/auth")}
-                    className="bg-gradient-primary shadow-glow"
-                  >
+                  <p className="text-lg font-semibold text-muted-foreground mb-4">Mehr Prompts nach dem Login</p>
+                  <Button onClick={() => navigate("/auth")} className="bg-gradient-primary shadow-glow">
                     Jetzt anmelden
                   </Button>
                 </div>
@@ -387,7 +331,7 @@ const Index = () => {
                           Zurück
                         </Button>
                       </PaginationItem>
-                      
+
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                         <PaginationItem key={page}>
                           <PaginationLink
@@ -419,13 +363,11 @@ const Index = () => {
             </>
           ) : (
             <div className="py-12 text-center">
-              <p className="text-muted-foreground">
-                {searchQuery ? t('empty.noResults') : t('empty.noPrompts')}
-              </p>
+              <p className="text-muted-foreground">{searchQuery ? t("empty.noResults") : t("empty.noPrompts")}</p>
             </div>
           )}
         </>
-      )}
+      }
 
       <PromptDetailDialog
         open={dialogOpen}
