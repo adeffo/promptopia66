@@ -25,7 +25,7 @@ const AuthSync = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => { 
+  useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
